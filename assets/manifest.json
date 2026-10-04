@@ -1,0 +1,507 @@
+{
+  "logicalCell": 32,
+  "displayGrid": [
+    32,
+    32
+  ],
+  "mapGrid": [
+    31,
+    25
+  ],
+  "mapOffset": [
+    0,
+    3
+  ],
+  "sheets": {
+    "hulk": {
+      "file": "hulk-atlas.png",
+      "columns": 8,
+      "rows": 8
+    },
+    "mission": {
+      "file": "mission-atlas.png",
+      "columns": 4,
+      "rows": 4
+    },
+    "marines": {
+      "file": "marines-atlas.png",
+      "columns": 4,
+      "rows": 3
+    }
+  },
+  "sprites": {
+    "floor-plate": {
+      "sheet": "hulk",
+      "index": 0
+    },
+    "floor-grate": {
+      "sheet": "hulk",
+      "index": 1
+    },
+    "floor-cables": {
+      "sheet": "hulk",
+      "index": 2
+    },
+    "hull-solid": {
+      "sheet": "hulk",
+      "index": 3
+    },
+    "hull-edge": {
+      "sheet": "hulk",
+      "index": 4
+    },
+    "hull-outer-corner": {
+      "sheet": "hulk",
+      "index": 5
+    },
+    "hull-inner-corner": {
+      "sheet": "hulk",
+      "index": 6
+    },
+    "hull-cracked": {
+      "sheet": "hulk",
+      "index": 7
+    },
+    "door-closed": {
+      "sheet": "hulk",
+      "index": 8
+    },
+    "door-quarter": {
+      "sheet": "hulk",
+      "index": 9
+    },
+    "door-half": {
+      "sheet": "hulk",
+      "index": 10
+    },
+    "door-three-quarter": {
+      "sheet": "hulk",
+      "index": 11
+    },
+    "door-open": {
+      "sheet": "hulk",
+      "index": 12
+    },
+    "door-damaged": {
+      "sheet": "hulk",
+      "index": 13
+    },
+    "breach-rubble": {
+      "sheet": "hulk",
+      "index": 14
+    },
+    "vacuum": {
+      "sheet": "hulk",
+      "index": 15
+    },
+    "marine-rifle": {
+      "sheet": "hulk",
+      "index": 16
+    },
+    "marine-rifle-left": {
+      "sheet": "hulk",
+      "index": 17
+    },
+    "marine-rifle-right": {
+      "sheet": "hulk",
+      "index": 18
+    },
+    "marine-scattergun": {
+      "sheet": "hulk",
+      "index": 19
+    },
+    "marine-scattergun-left": {
+      "sheet": "hulk",
+      "index": 20
+    },
+    "marine-scattergun-right": {
+      "sheet": "hulk",
+      "index": 21
+    },
+    "marine-cannon": {
+      "sheet": "hulk",
+      "index": 22
+    },
+    "marine-cannon-left": {
+      "sheet": "hulk",
+      "index": 23
+    },
+    "marine-cannon-right": {
+      "sheet": "hulk",
+      "index": 24
+    },
+    "marine-flame": {
+      "sheet": "hulk",
+      "index": 25
+    },
+    "marine-flame-left": {
+      "sheet": "hulk",
+      "index": 26
+    },
+    "marine-flame-right": {
+      "sheet": "hulk",
+      "index": 27
+    },
+    "marine-unarmed": {
+      "sheet": "hulk",
+      "index": 28
+    },
+    "marine-crouched": {
+      "sheet": "hulk",
+      "index": 29
+    },
+    "marine-fallen": {
+      "sheet": "hulk",
+      "index": 30
+    },
+    "civilian": {
+      "sheet": "hulk",
+      "index": 31
+    },
+    "bug-basic": {
+      "sheet": "hulk",
+      "index": 32
+    },
+    "bug-basic-left": {
+      "sheet": "hulk",
+      "index": 33
+    },
+    "bug-basic-right": {
+      "sheet": "hulk",
+      "index": 34
+    },
+    "bug-skitter": {
+      "sheet": "hulk",
+      "index": 35
+    },
+    "bug-skitter-left": {
+      "sheet": "hulk",
+      "index": 36
+    },
+    "bug-skitter-right": {
+      "sheet": "hulk",
+      "index": 37
+    },
+    "bug-brute": {
+      "sheet": "hulk",
+      "index": 38
+    },
+    "bug-brute-left": {
+      "sheet": "hulk",
+      "index": 39
+    },
+    "bug-brute-right": {
+      "sheet": "hulk",
+      "index": 40
+    },
+    "bug-spitter": {
+      "sheet": "hulk",
+      "index": 41
+    },
+    "bug-spitter-left": {
+      "sheet": "hulk",
+      "index": 42
+    },
+    "bug-spitter-right": {
+      "sheet": "hulk",
+      "index": 43
+    },
+    "blip": {
+      "sheet": "hulk",
+      "index": 44
+    },
+    "claw-slash": {
+      "sheet": "hulk",
+      "index": 45
+    },
+    "bug-fallen": {
+      "sheet": "hulk",
+      "index": 46
+    },
+    "eggs": {
+      "sheet": "hulk",
+      "index": 47
+    },
+    "rifle-muzzle": {
+      "sheet": "hulk",
+      "index": 48
+    },
+    "rifle-tracer": {
+      "sheet": "hulk",
+      "index": 49
+    },
+    "rifle-impact": {
+      "sheet": "hulk",
+      "index": 50
+    },
+    "scattergun-muzzle": {
+      "sheet": "hulk",
+      "index": 51
+    },
+    "scattergun-projectile": {
+      "sheet": "hulk",
+      "index": 52
+    },
+    "scattergun-impact": {
+      "sheet": "hulk",
+      "index": 53
+    },
+    "cannon-muzzle": {
+      "sheet": "hulk",
+      "index": 54
+    },
+    "cannon-tracer": {
+      "sheet": "hulk",
+      "index": 55
+    },
+    "cannon-impact": {
+      "sheet": "hulk",
+      "index": 56
+    },
+    "flame-projectile": {
+      "sheet": "hulk",
+      "index": 57
+    },
+    "flame-impact": {
+      "sheet": "hulk",
+      "index": 58
+    },
+    "frag": {
+      "sheet": "hulk",
+      "index": 59
+    },
+    "frag-impact": {
+      "sheet": "hulk",
+      "index": 60
+    },
+    "stun": {
+      "sheet": "hulk",
+      "index": 61
+    },
+    "stun-impact": {
+      "sheet": "hulk",
+      "index": 62
+    },
+    "acid-projectile": {
+      "sheet": "hulk",
+      "index": 63
+    },
+    "relay": {
+      "sheet": "mission",
+      "index": 0
+    },
+    "beacon": {
+      "sheet": "mission",
+      "index": 1
+    },
+    "valve": {
+      "sheet": "mission",
+      "index": 2
+    },
+    "extraction": {
+      "sheet": "mission",
+      "index": 3
+    },
+    "recorder": {
+      "sheet": "mission",
+      "index": 4
+    },
+    "capacitor": {
+      "sheet": "mission",
+      "index": 5
+    },
+    "capsule": {
+      "sheet": "mission",
+      "index": 6
+    },
+    "charges": {
+      "sheet": "mission",
+      "index": 7
+    },
+    "sample": {
+      "sheet": "mission",
+      "index": 8
+    },
+    "ledger": {
+      "sheet": "mission",
+      "index": 9
+    },
+    "key": {
+      "sheet": "mission",
+      "index": 10
+    },
+    "supply": {
+      "sheet": "mission",
+      "index": 11
+    },
+    "acid-impact": {
+      "sheet": "mission",
+      "index": 12
+    },
+    "stunned": {
+      "sheet": "mission",
+      "index": 13
+    },
+    "overwatch": {
+      "sheet": "mission",
+      "index": 14
+    },
+    "jam": {
+      "sheet": "mission",
+      "index": 15
+    },
+    "crew-rifle-idle": {
+      "sheet": "marines",
+      "index": 0
+    },
+    "crew-scattergun-idle": {
+      "sheet": "marines",
+      "index": 1
+    },
+    "crew-cannon-idle": {
+      "sheet": "marines",
+      "index": 2
+    },
+    "crew-flame-idle": {
+      "sheet": "marines",
+      "index": 3
+    },
+    "crew-rifle-left": {
+      "sheet": "marines",
+      "index": 4
+    },
+    "crew-scattergun-left": {
+      "sheet": "marines",
+      "index": 5
+    },
+    "crew-cannon-left": {
+      "sheet": "marines",
+      "index": 6
+    },
+    "crew-flame-left": {
+      "sheet": "marines",
+      "index": 7
+    },
+    "crew-rifle-right": {
+      "sheet": "marines",
+      "index": 8
+    },
+    "crew-scattergun-right": {
+      "sheet": "marines",
+      "index": 9
+    },
+    "crew-cannon-right": {
+      "sheet": "marines",
+      "index": 10
+    },
+    "crew-flame-right": {
+      "sheet": "marines",
+      "index": 11
+    }
+  },
+  "weapons": {
+    "rifle": {
+      "actor": "crew-rifle",
+      "muzzle": "rifle-muzzle",
+      "projectile": "rifle-tracer",
+      "impact": "rifle-impact"
+    },
+    "scattergun": {
+      "actor": "crew-scattergun",
+      "muzzle": "scattergun-muzzle",
+      "projectile": "scattergun-projectile",
+      "impact": "scattergun-impact"
+    },
+    "cannon": {
+      "actor": "crew-cannon",
+      "muzzle": "cannon-muzzle",
+      "projectile": "cannon-tracer",
+      "impact": "cannon-impact"
+    },
+    "flame": {
+      "actor": "crew-flame",
+      "projectile": "flame-projectile",
+      "impact": "flame-impact"
+    }
+  },
+  "bugs": {
+    "basic": {
+      "actor": "bug-basic",
+      "walk": [
+        "bug-basic-left",
+        "bug-basic-right"
+      ],
+      "artFacing": 2
+    },
+    "skitter": {
+      "actor": "bug-skitter",
+      "walk": [
+        "bug-skitter-left",
+        "bug-skitter-right"
+      ],
+      "artFacing": 2
+    },
+    "brute": {
+      "actor": "bug-brute",
+      "walk": [
+        "bug-brute-left",
+        "bug-brute-right"
+      ],
+      "artFacing": 2
+    },
+    "spitter": {
+      "actor": "bug-spitter",
+      "walk": [
+        "bug-spitter-left",
+        "bug-spitter-right"
+      ],
+      "artFacing": 2
+    }
+  },
+  "grenades": {
+    "frag": {
+      "projectile": "frag",
+      "impact": "frag-impact"
+    },
+    "stun": {
+      "projectile": "stun",
+      "impact": "stun-impact"
+    }
+  },
+  "spitter": {
+    "projectile": "acid-projectile",
+    "impact": "acid-impact"
+  },
+  "doorFrames": [
+    "door-closed",
+    "door-quarter",
+    "door-half",
+    "door-three-quarter",
+    "door-open"
+  ],
+  "mapMarkers": {
+    "U": "relay",
+    "V": "relay",
+    "X": "beacon",
+    "P": "relay",
+    "H": "supply",
+    "L": "sample",
+    "R": "recorder",
+    "Q": "supply",
+    "Z": "extraction",
+    "1": "valve",
+    "2": "valve",
+    "3": "valve"
+  },
+  "items": {
+    "flight recorder": "recorder",
+    "reserve capacitor": "capacitor",
+    "left rescue capsule": "capsule",
+    "right rescue capsule": "capsule",
+    "demolition charge": "charges",
+    "left sample": "sample",
+    "right sample": "sample",
+    "crew ledger": "ledger",
+    "authorization key": "key"
+  }
+}

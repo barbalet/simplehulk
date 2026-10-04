@@ -4,7 +4,7 @@ CPPFLAGS ?= -Isrc/c-core
 CFLAGS ?= -std=c99 -O2 -Wall -Wextra -Wpedantic -Werror
 BUILD ?= build
 CORE := $(BUILD)/rules.o $(BUILD)/scenarios.o
-.PHONY: all smoke scenarios test check rebuild-test sanitize clean
+.PHONY: all smoke scenarios test check rebuild-test sanitize clean wasm wasm-test serve
 all: $(BUILD)/libsimplehulk.a $(BUILD)/c-test $(BUILD)/simple-hulk
 $(BUILD):
 	mkdir -p $(BUILD)
@@ -36,3 +36,11 @@ sanitize:
 	$(MAKE) --no-print-directory BUILD=build/sanitize CFLAGS='-std=c99 -O1 -g -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer' test
 clean:
 	rm -rf $(BUILD)
+wasm:
+	./scripts/build_wasm.sh
+$(BUILD)/wasm-parity: src/c-test/wasm-parity.c src/wasm/bridge.c $(BUILD)/libsimplehulk.a
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/c-test/wasm-parity.c src/wasm/bridge.c $(BUILD)/libsimplehulk.a -o $@
+wasm-test: wasm $(BUILD)/wasm-parity
+	node src/c-test/wasm-test.mjs
+serve:
+	python3 -m http.server 8000

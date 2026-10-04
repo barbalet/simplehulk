@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simple Hulk — boarding console</title><link rel="stylesheet" href="game.css">
+</head>
+<body>
+<header><div><p class="eyebrow">BOARDING CONSOLE / LOCAL HOTSEAT</p><h1>Simple Hulk</h1></div><nav><a href="../rules/RULES.md">Rules</a><a href="../output/pdf/index.html">Books</a><a href="../assets/index.html">Art inventory</a><a href="https://github.com/barbalet/simplehulk/">Source</a></nav></header>
+<section class="setup" aria-label="Mission setup">
+<label>Mission <select id="mission"></select></label><label>Seed <input id="seed" type="number" min="0" max="4294967295" value="2026"></label>
+<label>Optional bugs <select id="specialist"><option value="0">Basic only</option><option value="1">Skitter</option><option value="2">Brute</option><option value="3">Spitter</option></select></label>
+<label>House rules <select id="house"><option value="0">Standard</option><option value="1">Training (+2 phases)</option><option value="2">Hard vacuum</option><option value="4">Reliable bursts</option><option value="8">Ghost contacts</option><option value="16">Sealed bulkheads</option><option value="32">Supply cache</option></select></label>
+<button id="new" disabled>Start mission</button><label>View <select id="viewer"><option value="0">Marines</option><option value="1">Aliens (private contacts)</option></select></label>
+<label>Zoom <select id="zoom"><option value="fit" selected>Fit board</option><option value="32">32 px</option><option value="48">48 px</option><option value="64">64 px</option></select></label><label><input id="motion" type="checkbox" checked> Animation</label>
+</section>
+<p id="briefing"></p><p id="status" role="status">Loading WebAssembly…</p>
+<main><section class="board-column"><div class="map-scroll"><canvas id="map" width="1024" height="1024" tabindex="0" aria-label="32 by 32 boarding map. Use the coordinate controls below as an alternative to clicking."></canvas></div>
+<p id="square">Select a model or square. Map coordinates use the book's one-based rows and columns.</p>
+<div class="coordinates"><label>Row <input id="row" type="number" min="1" max="25" value="23"></label><label>Column <input id="col" type="number" min="1" max="31" value="13"></label><button id="select-square">Select square</button><label>Target ID <input id="target" type="number" min="-1" max="95" value="-1"></label><label>Item ID <input id="item" type="number" min="0" max="7" value="0"></label></div>
+<div class="actions" id="actions">
+<button data-action="0">Move to square</button><button data-action="2">Open / close door</button><button data-action="3">Fire at target / flame square</button><button data-action="4">Melee target</button><button data-action="5">Frag square</button><button data-action="6">Stun square</button><button data-action="7">Overwatch (2 AP)</button><button data-action="8">Clear jam</button><button data-action="9">Interact / inspect target</button><button data-action="10">Pick up dropped item</button><button data-action="11">Transfer to target</button><button data-action="12">Reveal blip</button><button data-action="13">Breach door</button><button data-action="14">Supply ammo</button><button id="interact-frag">Locker / supply frag</button>
+</div>
+<div class="turns"><span>Turn:</span><button data-facing="0">↑ North</button><button data-facing="1">→ East</button><button data-facing="2">↓ South</button><button data-facing="3">← West</button><button id="end">End activation</button><button id="phase">End phase</button></div>
+<section id="arrivals" hidden><h2>Alien arrivals</h2><p>Choose entry points, then finish deployment. The engine enforces the queue and entry limits.</p><div id="entries"></div><button id="ready">Finish deployment</button></section>
+<section id="reaction" hidden><h2>Overwatch — attack paused</h2><p id="reaction-text"></p><label>Responding Marine <select id="react-marine"></select></label><button id="react-fire">Fire reaction</button><button id="react-hold">Decline reaction</button><button id="resolve">Finish reactions / resume alien attack</button></section>
+<details><summary>How to play this console</summary><p>Two players share this device. Select a unit in the roster to activate it. Select a destination or enemy on the map, then choose an action. Selecting a unit on the map does not activate it; it sets the target. Turning costs AP. End an activation before choosing another model. End the Marines phase, deploy contacts, then play alien activations. Resolve every overwatch window before continuing.</p><p>The 31×25 book map sits inside a 32×32 display grid. Outer vacuum cells are scenery. Movement animates between adjacent cells; rotations and effects are visual only. Rules, random dice, hidden contacts, items, victory and AP are handled by the compiled C engine. No automatic player or network play is provided. Alien view reveals private information: pass the device before switching views.</p><p>Relays, valves and mission gear retain their letter or number from the books. Mission collection uses Interact; Pick up is for dropped equipment. Use the item list and target ID for transfers. Overwatch is explicit: each eligible Marine may fire or decline once, in your chosen order; finish reactions to resume the alien action.</p></details>
+</section><aside><h2>Roster</h2><div id="units"></div><h2>Mission items</h2><div id="items"></div><h2>Feedback</h2><button id="save-log">Download game log</button><ol id="log" aria-live="polite" aria-relevant="additions"></ol></aside></main>
+<footer>Original grayscale pencil artwork • 32×32 logical cells • C rules compiled to WebAssembly</footer>
+<script type="module" src="game.js"></script>
+</body></html>

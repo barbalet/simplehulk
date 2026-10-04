@@ -37,4 +37,21 @@ victory; the bot results do not establish mission balance.
 
 Cover assets and their generation prompts are in `output/pdf/`.
 
+## Browser game and artwork
+
+[WebAssembly game](web/index.html) · [Game guide](web/README.md) · [Art inventory](assets/index.html)
+
+The browser uses the C engine for all nine missions and provides local hotseat
+play, a 32 × 32 display grid, walking/turning sprites, sliding doors, weapon and
+grenade effects, and explicit overwatch reactions. The three grayscale pencil
+atlases and their prompts are in [assets](assets/README.md).
+
+```sh
+make wasm-test                  # Build WASM, compare native behavior, audit art
+make serve                      # Open http://localhost:8000/web/
+```
+
+The compiled WASM module is included. Rebuilding needs Clang and wasm-ld;
+serving the existing files only needs an HTTP server.
+
 ![Marines holding a corridor against the bugs](https://github.com/barbalet/simplehulk/raw/refs/heads/main/output/pdf/rules-cover.png)

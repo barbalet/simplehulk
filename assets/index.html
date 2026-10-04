@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Simple Hulk — art inventory</title>
+<style>body{background:#151718;color:#ddd;font:15px system-ui;margin:24px}a{color:#ddd}h1{letter-spacing:.08em}#tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.tile{border:1px solid #555;padding:10px;text-align:center}.image{width:96px;height:96px;margin:auto;background-repeat:no-repeat;filter:grayscale(1)}p{max-width:850px}.name{font:12px monospace;overflow-wrap:anywhere;margin-top:10px}#result{font-family:monospace}</style>
+<h1>Simple Hulk / art inventory</h1><p><a href="../web/index.html">Play the browser game</a> · <a href="manifest.json">Asset manifest</a> · <a href="ARTWORK.md">Generation prompts</a></p><p>Every atlas cell is listed below. Sprites rotate in quarter turns, and walking uses alternating poses. Sliding doors have five frames. Logical cells are 32×32; this gallery enlarges each cell to inspect the pencil lines. All images are served from this directory.</p><p id="result">Checking atlas files…</p><div id="tiles"></div>
+<script type="module">
+try {
+ const m=await fetch('manifest.json').then(r=>{if(!r.ok)throw Error('Manifest unavailable');return r.json()});
+ await Promise.all(Object.values(m.sheets).map(s=>new Promise((resolve,reject)=>{const i=new Image();i.onload=resolve;i.onerror=()=>reject(Error(s.file+' unavailable'));i.src=s.file})));
+ for(const [name,sprite] of Object.entries(m.sprites)) {const s=m.sheets[sprite.sheet],cell=document.createElement('div'),art=document.createElement('div'),label=document.createElement('div');cell.className='tile';art.className='image';art.style.backgroundImage=`url(${s.file})`;art.style.backgroundSize=`${s.columns*96}px ${s.rows*96}px`;art.style.backgroundPosition=`${-(sprite.index%s.columns)*96}px ${-Math.floor(sprite.index/s.columns)*96}px`;label.className='name';label.textContent=name;cell.append(art,label);document.querySelector('#tiles').append(cell);}
+ document.querySelector('#result').textContent=`${Object.keys(m.sprites).length} sprite cells / ${Object.keys(m.sheets).length} atlases loaded.`;
+} catch(e) {document.querySelector('#result').textContent=e.message;}
+</script></html>
