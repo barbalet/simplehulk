@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="Simple Hulk: a two-player boarding game of narrow corridors, hidden aliens, and overwatch. Download the rules and eight-scenario companion book.">
+  <title>Simple Hulk — Boarding documents</title>
+  <style>
+    :root { color-scheme: dark; --ink:#e5e6dc; --muted:#adb1a3; --amber:#e6bd75; --line:#33382e; --light: .72; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#0b0d0c; color:var(--ink); font-family:Arial,Helvetica,sans-serif; }
+    body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:3; opacity:.035; background:repeating-linear-gradient(0deg,transparent,transparent 3px,#b4b9a8 4px); }
+    a { color:inherit; }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    a:focus-visible,button:focus-visible { outline:2px solid var(--amber); outline-offset:6px; }
+    .shell { max-width:1240px; margin:auto; padding:0 48px; }
+    .mono { font-family:"Courier New",monospace; font-size:11px; line-height:1.5; letter-spacing:.14em; text-transform:uppercase; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:24px; min-height:92px; border-bottom:1px solid var(--line); }
+    .identity { display:flex; gap:12px; align-items:center; text-decoration:none; }
+    .mark { display:grid; place-items:center; width:31px; height:31px; border:1px solid #646b55; color:var(--amber); font-size:18px; }
+    .controls { display:flex; align-items:center; gap:24px; }
+    .signal { color:var(--muted); }
+    .signal::before { content:""; display:inline-block; width:5px; height:5px; margin:0 9px 2px 0; border-radius:50%; background:var(--amber); }
+    .light-toggle { cursor:pointer; background:transparent; border:1px solid #434936; color:var(--muted); padding:9px 12px; }
+    .light-toggle:hover { color:var(--ink); border-color:var(--amber); }
+    .hero { position:relative; display:grid; grid-template-columns:1.15fr 1fr; gap:40px; align-items:center; padding:66px 0 64px; }
+    .hero::before { content:""; position:absolute; top:0; left:14%; width:65%; height:80%; pointer-events:none; background:radial-gradient(ellipse at 50% 0%,#cfa25719,transparent 70%); opacity:var(--light); }
+    .fixture { position:absolute; left:0; top:-1px; height:3px; width:115px; background:#fff0c7; opacity:var(--light); box-shadow:0 0 18px 5px #e7bf7440; }
+    .eyebrow { color:var(--amber); margin:0 0 28px; }
+    h1 { position:relative; margin:0; font-family:Impact,"Arial Black",Arial,sans-serif; font-size:clamp(76px,9.8vw,134px); line-height:.89; font-weight:900; letter-spacing:-.035em; text-transform:uppercase; }
+    h1 .word { display:block; }
+    .reflect { color:#b6b9aa; }
+    body[data-light="on"] .reflect { color:rgb(182 185 170 / 1); text-shadow:0 0 calc(22px * var(--light)) rgb(243 210 138 / var(--light)); filter:brightness(calc(1 + var(--light) * .8)); }
+    .intro { max-width:385px; font-size:17px; line-height:1.65; color:var(--muted); margin:28px 0; }
+    .details { display:flex; flex-wrap:wrap; gap:18px; color:#bcc0af; margin:30px 0 0; padding:19px 0 0; border-top:1px solid var(--line); }
+    .art { position:relative; margin:0; height:420px; overflow:hidden; background:#25281f; border:1px solid #414637; }
+    .art img { width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:.68; filter:grayscale(1) contrast(1.12); }
+    .art::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(0deg,#0b0d0cbb,transparent 50%),linear-gradient(90deg,#0b0d0c40,transparent); }
+    .art figcaption { position:absolute; bottom:19px; left:20px; right:20px; z-index:1; display:flex; justify-content:space-between; gap:20px; color:#e2e2cf; }
+    .corner { position:absolute; width:13px; height:13px; border-top:1px solid var(--amber); border-left:1px solid var(--amber); top:12px; left:12px; z-index:1; }
+    .downloads { padding:0 0 58px; }
+    .section-label { display:flex; justify-content:space-between; gap:20px; padding:0 0 17px; color:var(--muted); }
+    .section-label h2 { margin:0; font-size:inherit; font-weight:normal; }
+    .books { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .book { position:relative; display:grid; grid-template-columns:100px 1fr; gap:24px; border:1px solid var(--line); background:linear-gradient(135deg,#191d16,#111410); padding:27px; }
+    .cover { width:100px; height:142px; object-fit:cover; border:1px solid #555b4a; filter:grayscale(1); opacity:.83; }
+    .book-id { margin:0 0 8px; color:var(--amber); }
+    h3 { margin:0 0 10px; font-size:27px; font-weight:500; letter-spacing:-.025em; }
+    .book p.summary { margin:0; color:var(--muted); font-size:14px; line-height:1.65; min-height:70px; }
+    .download { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 0 0; margin:16px 0 0; border-top:1px solid #3b4133; text-decoration:none; color:var(--ink); font-size:12px; letter-spacing:.075em; }
+    .download:hover { color:var(--amber); }
+    .arrow { font-family:Arial,sans-serif; font-size:20px; line-height:1; }
+    .start { display:flex; gap:28px; align-items:baseline; padding:25px 0 32px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .start h2 { font-size:11px; color:var(--amber); white-space:nowrap; font-weight:normal; margin:0; }
+    .start p { margin:0; color:var(--muted); font-size:14px; line-height:1.75; }
+    .start strong { color:var(--ink); font-weight:normal; }
+    footer { display:flex; justify-content:space-between; gap:24px; padding:25px 0 34px; color:#8e9583; }
+    footer a { text-underline-offset:4px; }
+    @media (max-width:850px) { .shell { padding:0 26px; } .hero { gap:26px; } .art { height:380px; } .book { padding:22px; grid-template-columns:70px 1fr; gap:17px; } .cover { width:70px; height:108px; } .book p.summary { min-height:94px; } .signal { display:none; } }
+    @media (max-width:620px) { .shell { padding:0 20px; } header { min-height:76px; gap:12px; } .identity { letter-spacing:.06em; } .light-toggle { font-size:10px; letter-spacing:.02em; } .hero { grid-template-columns:1fr; padding:43px 0 35px; gap:32px; } h1 { font-size:clamp(82px,22vw,132px); } .eyebrow { margin-bottom:22px; } .intro { margin-top:22px; } .art { height:300px; } .books { grid-template-columns:1fr; } .book { grid-template-columns:80px 1fr; } .cover { width:80px; height:124px; } .book p.summary { min-height:0; } .section-label { font-size:10px; letter-spacing:.08em; } .start { display:block; } .start h2 { margin-bottom:12px; } footer { flex-direction:column; gap:13px; } }
+    @media (prefers-reduced-motion:reduce) { .fixture { opacity:.72; } }
+  </style>
+</head>
+<body data-light="off">
+  <div class="shell">
+    <header>
+      <a class="identity mono" href="#top" aria-label="Simple Hulk home"><span class="mark" aria-hidden="true">+</span> Simple Hulk / Field archive</a>
+      <div class="controls">
+        <a class="signal mono" href="https://github.com/barbalet/simplehulk/">Game on GitHub</a>
+        <button class="light-toggle mono" type="button" aria-pressed="false" hidden>Light: steady</button>
+      </div>
+    </header>
+    <main id="top">
+      <section class="hero" aria-labelledby="title">
+        <div class="fixture" aria-hidden="true"></div>
+        <div>
+          <p class="eyebrow mono">Boarding order 01 / Enter the wreck</p>
+          <h1 id="title" aria-label="Simple Hulk"><span class="word" aria-hidden="true">S<span class="reflect">i</span>m<span class="reflect">p</span>le</span><span class="word" aria-hidden="true">H<span class="reflect">u</span>l<span class="reflect">k</span></span></h1>
+          <p class="intro">The corridors are narrow. The contacts are moving. Hold your fire until you need it.</p>
+          <div class="details mono"><span>2 players</span><span>5 Marines</span><span>9 missions</span></div>
+        </div>
+        <figure class="art">
+          <span class="corner" aria-hidden="true"></span>
+          <img src="https://github.com/barbalet/simplehulk/raw/refs/heads/main/output/pdf/fluff-cover.png" alt="Marines exploring a ruined spacecraft chamber while an alien lurks on a gantry" width="1024" height="1536" fetchpriority="high">
+          <figcaption class="mono"><span>Mercy of Tides</span><span>Contact unresolved</span></figcaption>
+        </figure>
+      </section>
+      <section class="downloads" aria-labelledby="documents">
+        <div class="section-label mono"><h2 id="documents">01 / Boarding documents</h2><span>PDF / Print &amp; play</span></div>
+        <div class="books">
+          <article class="book">
+            <img class="cover" src="https://github.com/barbalet/simplehulk/raw/refs/heads/main/output/pdf/rules-cover.png" alt="RULES cover illustration" width="100" height="142" loading="lazy">
+            <div>
+              <p class="book-id mono">Document A / 7 pages</p>
+              <h3>R<span class="reflect">u</span>les of engagement</h3>
+              <p class="summary">Everything you need to board: overwatch, four weapons, grenades, hidden blips, and the opening mission.</p>
+              <a class="download mono" href="RULES.pdf" download="Simple-Hulk-RULES.pdf"><span>Download rules <span style="color:var(--muted)">/ PDF</span></span><span class="arrow" aria-hidden="true">↘</span></a>
+            </div>
+          </article>
+          <article class="book">
+            <img class="cover" src="https://github.com/barbalet/simplehulk/raw/refs/heads/main/output/pdf/fluff-cover.png" alt="FLUFF cover illustration" width="100" height="142" loading="lazy">
+            <div>
+              <p class="book-id mono">Document B / 23 pages</p>
+              <h3>Into the <span class="reflect">w</span>reck</h3>
+              <p class="summary">The FLUFF companion: eight detailed scenarios, optional bugs, house rules, and the crew behind the counters.</p>
+              <a class="download mono" href="FLUFF.pdf" download="Simple-Hulk-FLUFF.pdf"><span>Download fluff <span style="color:var(--muted)">/ PDF</span></span><span class="arrow" aria-hidden="true">↘</span></a>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="start" aria-labelledby="start-title">
+        <h2 class="mono" id="start-title">Your first boarding</h2>
+        <p>Start with <strong>Wake the beacon</strong> on rules page 6. Bring two six-sided dice, counters, and a square grid. Restore both relays, then transmit. Someone needs to hold the corridor.</p>
+      </section>
+    </main>
+    <footer class="mono"><span>Simple Hulk / <a href="https://github.com/barbalet/simplehulk/">GitHub repository</a></span><span><a href="../../rules/RULES.md">Rules source</a> &nbsp; / &nbsp; <a href="../../rules/FLUFF.md">Fluff source</a></span></footer>
+  </div>
+  <script>
+    (() => {
+      const button = document.querySelector('.light-toggle');
+      const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let flickering = !preference.matches;
+      let timer;
+      // Sparse, small dips evoke a failing lamp without rapid full-page flashes.
+      function pulse() {
+        if (!flickering || document.hidden) return;
+        const dip = Math.random() < .28;
+        document.documentElement.style.setProperty('--light', dip ? '.38' : String(.68 + Math.random() * .18));
+        timer = window.setTimeout(pulse, dip ? 280 : 1100 + Math.random() * 1700);
+      }
+      function update() {
+        window.clearTimeout(timer);
+        document.body.dataset.light = flickering ? 'on' : 'off';
+        document.documentElement.style.setProperty('--light', '.72');
+        button.textContent = flickering ? 'Light: flickering' : 'Light: steady';
+        button.setAttribute('aria-pressed', String(flickering));
+        if (flickering) pulse();
+      }
+      button.hidden = false;
+      button.addEventListener('click', () => { flickering = !flickering; update(); });
+      preference.addEventListener('change', () => { flickering = !preference.matches; update(); });
+      document.addEventListener('visibilitychange', update);
+      update();
+    })();
+  </script>
+</body>
+</html>

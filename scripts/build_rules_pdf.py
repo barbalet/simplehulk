@@ -76,7 +76,7 @@ def render(name):
             match = re.fullmatch(r'!\[([^\]]*)\]\(([^)]+)\)', line)
             if not match:
                 raise ValueError('Invalid image reference: ' + line)
-            source = ROOT / 'rules' / match.group(2)
+            source = (ROOT / 'rules' / match.group(2)).resolve()
             illustration = Image(str(source))
             scale = min(528 / illustration.imageWidth, 565 / illustration.imageHeight)
             illustration.drawWidth = illustration.imageWidth * scale

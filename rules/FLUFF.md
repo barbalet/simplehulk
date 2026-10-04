@@ -1,6 +1,6 @@
 # Simple Hulk - FLUFF
 
-![Black and white chamber illustration](assets/fluff-cover.png)
+![Black and white chamber illustration](../output/pdf/fluff-cover.png)
 
 Eight expeditions into the wreck.
 

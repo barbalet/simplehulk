@@ -1,6 +1,6 @@
 # Simple Hulk - RULES
 
-![Black and white boarding illustration](assets/rules-cover.png)
+![Black and white boarding illustration](../output/pdf/rules-cover.png)
 
 Corridors. Contacts. Overwatch.
 
