@@ -19,6 +19,22 @@ The PDF builder is `scripts/build_rules_pdf.py`; it uses ReportLab and the local
 Codex bundled fonts. Run it with the bundled Python runtime to regenerate both
 PDFs after editing the Markdown.
 
+## C game engine
+
+The C99 implementation is in [src/c-core](src/c-core/README.md), with an API,
+interactive command-line front end, and all nine mission maps. The test runner
+is in [src/c-test](src/c-test/README.md).
+
+```sh
+make test                       # Smoke test, rebuild, then run all nine games
+./build/simple-hulk 0 2026       # Interactive game: mission ID and seed
+./build/c-test --scenarios --verbose
+```
+
+Games emit movement, weapons, overwatch, and objective feedback. Full scenario
+reports are written under `build/`. A test game completes with either team's
+victory; the bot results do not establish mission balance.
+
 Cover assets and their generation prompts are in `output/pdf/`.
 
 ![Marines holding a corridor against the bugs](https://github.com/barbalet/simplehulk/raw/refs/heads/main/output/pdf/rules-cover.png)
