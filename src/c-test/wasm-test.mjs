@@ -39,7 +39,10 @@ for(let mission=0;mission<9;mission++) {
  const initial=snapshot(),trace=[];
  check(initial.map.length===25&&initial.map.every(row=>row.length===31),'Book map dimensions');
  check(initial.map.some(row=>row.includes(' '))&&!initial.map.some(row=>row.includes('#')),'Outlined hull has exterior gaps');
- check(initial.map.some(row=>row.includes('='))&&initial.map.some(row=>row.includes('+')),'Distinct walls and closed doors');
+ check(snapshot(1).map.some(row=>row.includes('='))&&initial.map.some(row=>row.includes('+')),'Distinct walls and closed doors');
+ check(initial.visible.length===25&&initial.visible.every(row=>row.length===31),'Core supplies visibility mask');
+ check(initial.map.some(row=>row.includes('?')),'Unseen interiors concealed');
+ check(snapshot(1).map.every(row=>!row.includes('?')),'Alien private chart complete');
  check(initial.entities.filter(e=>e.team===0).length===5,'Five Marines');
  check(initial.entities.filter(e=>e.team===2).every(e=>e.strength===-1),'Marine view hides contact strengths');
  check(snapshot(1).entities.filter(e=>e.team===2).every(e=>e.strength>0),'Alien view exposes contact strengths');

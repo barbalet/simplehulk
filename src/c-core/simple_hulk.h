@@ -122,6 +122,13 @@ const char *sh_result_name(SHResult result);
 const char *sh_weapon_name(SHWeapon weapon);
 const char *sh_bug_name(SHBug bug);
 int sh_can_see(const SHGame *game, int from, int row, int col);
+/* Current team sight: front half-plane, shared by living, onboard Marines.
+   Walls and vacuum are always charted; unseen interiors are '?'. Observed
+   entities project unseen living hostiles as anonymous blips without changing
+   their actual rules identity. Alien view remains complete. */
+int sh_marine_visible(const SHGame *game, int row, int col);
+char sh_view_tile(const SHGame *game, int row, int col, SHTeam viewer);
+int sh_observed_entity(const SHGame *game, int id, SHTeam viewer, SHEntity *out);
 int sh_can_shoot(const SHGame *game, int marine, int target);
 SHResult sh_activate(SHGame *game, int entity);
 SHResult sh_action(SHGame *game, SHAction action);

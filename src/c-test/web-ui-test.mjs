@@ -42,4 +42,6 @@ el('map').handlers.pointerdown({pointerId:1,clientX:736,clientY:864});el('map').
 assert.equal(marine.c,11);
 el('map').handlers.pointerdown({pointerId:2,clientX:736,clientY:864});el('map').handlers.pointermove({pointerId:2,clientX:736,clientY:928});el('map').handlers.pointerup({pointerId:2,clientX:736,clientY:928});assert.deepEqual(calls.pop(),[1,0,11,11]);
 sandbox.ui.openMenu(marine);el('unit-action').value='target:14';el('do-action').onclick();sandbox.ui.boardClick({r:11,c:12});assert.deepEqual(calls.pop(),[1,14,11,12,0]);
+state.viewer=0;state.visible=Array.from({length:25},()=> '0'.repeat(31));state.items=[{id:0,holder:-1,dropped:1,name:'recorder',r:11,c:11}];sandbox.ui.openMenu(marine);assert.ok(!el('unit-action').options.some(o=>o.value==='pickup:0'));
+state.visible[11]='0'.repeat(11)+'1'+'0'.repeat(19);sandbox.ui.openMenu(marine);assert.ok(el('unit-action').options.some(o=>o.value==='pickup:0'));
 console.log('PASS: board activation, movement, targeted grenades/weapons, overwatch reactions, deployment, keyboard cursor and zoom.');

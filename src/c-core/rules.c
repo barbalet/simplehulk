@@ -98,6 +98,40 @@ int sh_can_see(const SHGame *g,int from,int row,int col) {
     return 1;
 }
 static int arc(const SHEntity *e,int r,int c) { return (r-e->row)*dr[e->facing]+(c-e->col)*dc[e->facing]>=0; }
+int sh_marine_visible(const SHGame *g,int row,int col) {
+    int i;
+    if(!g||!valid(row,col)) return 0;
+    for(i=0;i<g->status.entities;i++) {
+        const SHEntity *e=&g->entity[i];
+        if(e->team==SH_MARINE&&e->alive&&!e->extracted&&arc(e,row,col)&&sh_can_see(g,i,row,col)) return 1;
+    }
+    return 0;
+}
+char sh_view_tile(const SHGame *g,int row,int col,SHTeam viewer) {
+    char tile=sh_tile(g,row,col);
+    if(viewer!=SH_MARINE||tile==SH_VOID||sh_tile_is_wall(tile)||sh_marine_visible(g,row,col)) return tile;
+    /* A blocking door cannot be a sight destination: show its face when a
+       Marine can see the adjacent approach square in the same front arc. */
+    if(tile==SH_CLOSED_DOOR) {
+        int i,d;
+        for(i=0;i<g->status.entities;i++) {
+            const SHEntity *e=&g->entity[i];
+            if(e->team!=SH_MARINE||!e->alive||e->extracted||!arc(e,row,col))continue;
+            for(d=0;d<4;d++)if(sh_can_see(g,i,row+dr[d],col+dc[d]))return tile;
+        }
+    }
+    return '?';
+}
+int sh_observed_entity(const SHGame *g,int id,SHTeam viewer,SHEntity *out) {
+    if(!sh_entity(g,id,viewer,out))return 0;
+    if(viewer==SH_MARINE&&out->team!=SH_MARINE&&!sh_marine_visible(g,out->row,out->col)) {
+        out->team=SH_BLIP;out->strength=-1;out->bug=SH_BASIC;out->quarry=0;
+        out->weapon=SH_RIFLE;out->wounds=0;out->ap=0;out->facing=SH_NORTH;
+        out->ammunition=-1;out->frag=0;out->stun=0;out->overwatch=0;
+        out->jammed=0;out->stunned=0;out->item=-1;out->inspected=0;
+    }
+    return 1;
+}
 static int weapon_range(SHWeapon w) { return w==SH_RIFLE?8:w==SH_SCATTERGUN?4:w==SH_CANNON?10:4; }
 int sh_can_shoot(const SHGame *g,int from,int target) {
     const SHEntity *e,*t;
@@ -240,7 +274,7 @@ static void visibility(SHGame *g) {
     do {
         changed=0;
         for(i=5;i<g->status.entities;i++) if(g->entity[i].alive && g->entity[i].team==SH_BLIP) {
-            for(m=0;m<5;m++) if(g->entity[m].alive && !g->entity[m].extracted && sh_can_see(g,m,g->entity[i].row,g->entity[i].col)) {reveal(g,i);changed=1;break;}
+            for(m=0;m<5;m++) if(g->entity[m].alive && !g->entity[m].extracted && arc(&g->entity[m],g->entity[i].row,g->entity[i].col)&&sh_can_see(g,m,g->entity[i].row,g->entity[i].col)) {reveal(g,i);changed=1;break;}
         }
     } while(changed);
 }
@@ -670,8 +704,8 @@ size_t sh_board(const SHGame *g,char *buffer,size_t capacity) {
     if(!g) {if(buffer&&capacity)buffer[0]='\0';return 0;}
     for(r=0;r<SH_ROWS;r++) {
         for(c=0;c<SH_COLS;c++) {
-            char tile=g->board[r][c];i=occupied(g,r,c);
-            if(i>=0) tile=g->entity[i].team==SH_MARINE?'M':g->entity[i].team==SH_BLIP?'b':'a';
+            char tile=sh_view_tile(g,r,c,SH_MARINE);SHEntity viewed;i=occupied(g,r,c);
+            if(i>=0&&sh_observed_entity(g,i,SH_MARINE,&viewed)) tile=viewed.team==SH_MARINE?'M':viewed.team==SH_BLIP?'b':'a';
             text[n++]=tile;
         }
         text[n++]='\n';

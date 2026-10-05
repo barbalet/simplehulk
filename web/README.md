@@ -26,8 +26,8 @@ the tests; Python serves the files.
 
 Choose a scenario and rules version from the single Play dropdown. It groups
 all nine missions and preserves every optional bug / house-rule combination.
-Seed, animation and private-view overrides live in Preferences. Current team
-view follows the phase; pass the device before ending a team phase.
+Seed, animation and private-view overrides live in Preferences. Marine view is the default; switch to the private Alien view only after
+passing the device. Current team view is an optional phase-following preference.
 
 Click a friendly piece to activate it, then click it again for its contextual
 action dropdown. Choose overwatch, turning, attacks, grenades, doors, mission
@@ -45,6 +45,17 @@ board space to pan. Pieces start at 64 pixels per cell so the viewport shows a
 useful portion of the map. Wheel / pinch and + / − zoom around the cursor or
 viewport center; Overview fits the whole map and Find active unit recenters it.
 Arrow keys select cells; Enter selects / moves and M opens piece actions.
+
+Marine view uses the core's current shared field of view: each living onboard
+Marine sees the forward half-plane through clear lines of sight. Doors, walls,
+exterior and intervening models block sight. Charted hull outlines remain visible;
+unseen interiors are dark, without fixtures, items, corpses or weapon effects.
+There is no permanent explored-area memory. Visible bugs use model art; unseen
+living bugs use the existing grayscale blip sprite with hidden profile and stats.
+Turning away or closing a door immediately restores the blip presentation without
+undoing a contact's actual reveal or changing its combat rules. The WASM snapshot
+provides the visibility mask, masked map and observed entities; JS does not invent
+its own visibility rules.
 
 Marine view hides contact strength/profile. Alien view reveals private data;
 this local hotseat convenience is not an access-control boundary. Restarting

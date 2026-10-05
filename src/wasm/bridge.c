@@ -35,9 +35,11 @@ EXPORT("error") const char *error(void) {return sh_last_error(game);}
 EXPORT("snapshot") const char *snapshot(int viewer) {
     SHStatus s=sh_status(game);SHEntity e;SHItem item;int i,r,c,n=0;
     n+=snprintf(json+n,sizeof json-(size_t)n,"{\"round\":%d,\"active\":%d,\"phase\":%d,\"outcome\":%d,\"pending\":%d,\"deadline\":%d,\"objectives\":%d,\"evacuated\":%d,\"signal\":%d,\"map\":[",s.round,s.active,s.phase,s.outcome,s.pending_target,s.deadline,(int)s.objectives,s.evacuated,s.signal_remaining);
-    for(r=0;r<SH_ROWS;r++) {json[n++]='"';for(c=0;c<SH_COLS;c++)json[n++]=sh_tile(game,r,c);json[n++]='"';if(r<SH_ROWS-1)json[n++]=',';}
-    n+=snprintf(json+n,sizeof json-(size_t)n,"],\"entities\":[");
-    for(i=0;i<s.entities;i++) {sh_entity(game,i,(SHTeam)viewer,&e);
+    for(r=0;r<SH_ROWS;r++) {json[n++]='"';for(c=0;c<SH_COLS;c++)json[n++]=sh_view_tile(game,r,c,(SHTeam)viewer);json[n++]='"';if(r<SH_ROWS-1)json[n++]=',';}
+    n+=snprintf(json+n,sizeof json-(size_t)n,"],\"visible\":[");
+    for(r=0;r<SH_ROWS;r++) {json[n++]='"';for(c=0;c<SH_COLS;c++)json[n++]=viewer!=SH_MARINE||sh_marine_visible(game,r,c)?'1':'0';json[n++]='"';if(r<SH_ROWS-1)json[n++]=',';}
+    n+=snprintf(json+n,sizeof json-(size_t)n,"],\"viewer\":%d,\"entities\":[",viewer);
+    for(i=0;i<s.entities;i++) {sh_observed_entity(game,i,(SHTeam)viewer,&e);
         n+=snprintf(json+n,sizeof json-(size_t)n,"%s{\"id\":%d,\"alive\":%d,\"extracted\":%d,\"r\":%d,\"c\":%d,\"ap\":%d,\"wounds\":%d,\"done\":%d,\"team\":%d,\"facing\":%d,\"weapon\":%d,\"bug\":%d,\"ammo\":%d,\"frag\":%d,\"stun\":%d,\"ow\":%d,\"jam\":%d,\"stunned\":%d,\"strength\":%d,\"item\":%d}",i?",":"",e.id,e.alive,e.extracted,e.row,e.col,e.ap,e.wounds,e.done,e.team,e.facing,e.weapon,e.bug,e.ammunition,e.frag,e.stun,e.overwatch,e.jammed,e.stunned,e.strength,e.item);
     }
     n+=snprintf(json+n,sizeof json-(size_t)n,"],\"items\":[");

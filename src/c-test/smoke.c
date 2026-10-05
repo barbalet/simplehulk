@@ -257,8 +257,32 @@ static void test_hull(void) {
     CHECK(sh_action(g,act(SH_TURN,0,0,-1,SH_EAST))==SH_OK);
     CHECK(g->entity[i].team==SH_ALIEN&&g->status.entities==6);sh_destroy(g);
 }
+static void test_field_of_view(void) {
+    SHGame *g=fixture(0);SHEntity viewed,actual;int i,id;
+    for(i=1;i<5;i++)g->entity[i].alive=0;
+    g->entity[0].facing=SH_NORTH;
+    id=enemy(g,8,10,SH_ALIEN,SH_BRUTE,1);
+    CHECK(sh_marine_visible(g,8,10));CHECK(!sh_marine_visible(g,12,10));
+    CHECK(sh_view_tile(g,12,10,SH_MARINE)=='?');CHECK(sh_view_tile(g,12,10,SH_ALIEN)=='.');
+    CHECK(sh_observed_entity(g,id,SH_MARINE,&viewed)&&viewed.team==SH_ALIEN&&viewed.bug==SH_BRUTE);
+    g->entity[0].facing=SH_SOUTH;
+    CHECK(!sh_marine_visible(g,8,10));
+    CHECK(sh_observed_entity(g,id,SH_MARINE,&viewed)&&viewed.team==SH_BLIP&&viewed.strength==-1&&viewed.bug==SH_BASIC&&viewed.wounds==0);
+    CHECK(sh_entity(g,id,SH_ALIEN,&actual)&&actual.team==SH_ALIEN&&actual.bug==SH_BRUTE&&actual.wounds==3);
+    CHECK(sh_observed_entity(g,id,SH_ALIEN,&viewed)&&viewed.team==SH_ALIEN);
+    g->entity[0].facing=SH_NORTH;g->board[9][10]=SH_CLOSED_DOOR;
+    CHECK(!sh_marine_visible(g,8,10));CHECK(sh_view_tile(g,9,10,SH_MARINE)==SH_CLOSED_DOOR);
+    g->board[9][10]=SH_OPEN_DOOR;CHECK(sh_marine_visible(g,8,10));
+    g->board[9][10]='|';CHECK(!sh_marine_visible(g,8,10));CHECK(sh_view_tile(g,9,10,SH_MARINE)=='|');
+    g->board[9][10]='.';g->entity[1].alive=1;g->entity[1].row=7;g->entity[1].col=10;g->entity[1].facing=SH_SOUTH;
+    g->entity[0].facing=SH_SOUTH;CHECK(sh_marine_visible(g,8,10));
+    g->entity[1].extracted=1;CHECK(!sh_marine_visible(g,8,10));
+    g->entity[0].alive=0;CHECK(!sh_marine_visible(g,12,10));
+    CHECK(sh_view_tile(g,0,0,SH_MARINE)=='-');CHECK(!sh_marine_visible(g,-1,0));
+    sh_destroy(g);
+}
 int smoke_tests(void) {
-    checks=failures=0;test_hull();test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
+    checks=failures=0;test_field_of_view();test_hull();test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
     printf("Smoke tests: %d checks, %d failures (actions, sight, overwatch, items, arrivals, all mission objectives).\n",checks,failures);
     return failures;
 }

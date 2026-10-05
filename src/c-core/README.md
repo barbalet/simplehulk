@@ -154,3 +154,15 @@ also present in `SHStatus`. The core faithfully uses the books' mission deadline
 it does not increase them to make a bot win. Maps and setup data currently match
 the Markdown books. Update `scenarios.c` and the objective handlers together when
 changing a mission, then run the tests.
+
+## Marine observation
+
+`sh_marine_visible` combines front-half-plane sight from all living, onboard
+Marines with the existing collision-aware line of sight. Contact auto-reveal now
+uses that same front arc. Sight has no extra range cap; weapon ranges still apply.
+`sh_view_tile` retains charted walls/exterior and visible door faces, replacing
+unseen interior details with `?`. `sh_observed_entity` projects unseen hostiles
+as anonymous blips, while `sh_entity` retains the authoritative rules identity.
+Observation never resets wounds, turns, AP or a previously revealed bug.
+`sh_board` now prints the Marine observation. Alien-view API consumers can request
+the complete chart and entity information explicitly.

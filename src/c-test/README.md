@@ -64,3 +64,8 @@ The scenario bots route through floor and operable doors, never exterior cells.
 
 `make wasm-test` additionally covers every hull asset connectivity mask, browser
 tile classification, native/WASM parity, and legal endings for all nine missions.
+
+Field-of-view fixtures cover forward/rear sight, turn-away blip projection,
+unchanged actual bug identity, shared sight, extracted/dead observers, closed
+and open doors, hull masking and bounds. WASM/native parity includes the new
+visibility mask and observed map/entities across every scenario.

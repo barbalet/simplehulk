@@ -85,7 +85,7 @@ function update() {
 function label(e) {return e.team===0?names[e.id]||'Marine':e.team===2?'Contact':'Alien '+bugNames[e.bug];}
 function select(r,c,target=-1) {
   selected={r,c};const e=get(state,target),tile=state.map[r]?.[c];
-  const kind=tile===' '?'exterior space':isWall(tile)?'hull wall':tile===CLOSED_DOOR?'closed door':tile===OPEN_DOOR?'open door':tile;
+  const kind=tile===' '?'exterior space':isWall(tile)?'hull wall':tile===CLOSED_DOOR?'closed door':tile===OPEN_DOOR?'open door':tile==='?'?'outside Marine sight':tile;
   $('square').textContent=`(${r+1},${c+1}) · ${e?label(e)+' · '+e.ap+' AP':kind}`;
 }
 function closeMenu(){ $('context').hidden=true;menuUnit=-1; }
@@ -103,7 +103,7 @@ function populateMenu(){
     add('target:0','Move → square');
     for(const [i,name] of ['North ↑','East →','South ↓','West ←'].entries())add('turn:'+i,'Face '+name);
     if(e.team!==2){add('target:3',e.weapon===3&&e.team===0?'Flame → square':'Fire → enemy');add('target:4','Melee → enemy');}
-    if(e.team===0){if(e.frag)add('target:5','Frag → square');if(e.stun)add('target:6','Stun → square');add('target:2','Open / close → door');add('target:13','Breach → door');add('target:9','Interact / inspect → square');add('frag','Take frag → supply / locker');add('target:14','Take ammo → supply');if(e.item>=0)add('target:11','Transfer item → Marine');for(const item of state.items.filter(i=>i.holder===-1&&i.dropped))add('pickup:'+item.id,'Pick up '+item.name+' → square');}
+    if(e.team===0){if(e.frag)add('target:5','Frag → square');if(e.stun)add('target:6','Stun → square');add('target:2','Open / close → door');add('target:13','Breach → door');add('target:9','Interact / inspect → square');add('frag','Take frag → supply / locker');add('target:14','Take ammo → supply');if(e.item>=0)add('target:11','Transfer item → Marine');for(const item of state.items.filter(i=>i.holder===-1&&i.dropped&&seen(i.r,i.c)))add('pickup:'+item.id,'Pick up '+item.name+' → square');}
     if(e.team===2)add('now:12','Reveal contact');
     add('end','End activation');
   }
@@ -134,6 +134,7 @@ function boardClick(p){
 }
 function focusUnit(){const e=get(state,state.active)||state.entities.find(e=>alive(e)&&e.team===(state.phase===0?0:1))||state.entities.find(alive);if(!e)return;const p=point(e.r,e.c),box=canvas.parentElement;box.scrollLeft=p.x/32*cellSize-box.clientWidth/2;box.scrollTop=p.y/32*cellSize-box.clientHeight/2;select(e.r,e.c,e.id);}
 function zoomTo(size,x,y){const box=canvas.parentElement,rect=box.getBoundingClientRect(),px=x??rect.left+box.clientWidth/2,py=y??rect.top+box.clientHeight/2,ox=px-rect.left,oy=py-rect.top,old=cellSize;cellSize=Math.max(8,Math.min(128,size));canvas.style.width=canvas.style.height=cellSize*32+'px';box.scrollLeft=(box.scrollLeft+ox)*cellSize/old-ox;box.scrollTop=(box.scrollTop+oy)*cellSize/old-oy;$('zoom-level').textContent=Math.round(cellSize)+' px';closeMenu();}
+function seen(r,c) {return state.viewer===1||state.visible?.[r]?.[c]==='1';}
 function floor(r,c) {return isFloor(state.map[r]?.[c]);}
 function corridor(r,c) {const tile=state.map[r]?.[c];return isFloor(tile)||tile===CLOSED_DOOR;}
 function doorAngle(r,c) {return corridor(r,c-1)&&corridor(r,c+1)?Math.PI/2:0;}
@@ -149,6 +150,8 @@ function render(now) {
         sprite(manifest.hull.connections[mask],p.x,p.y,0,1,1);
         // Visual light only: hull cells remain fixed and inaccessible.
         if($('motion').checked) {sprite(manifest.hull.connections[mask],p.x,p.y,0,1,.03+.025*Math.sin(now/900+c+r));}
+      } else if(t==='?') {
+        ctx.fillStyle='#222627';ctx.fillRect(c*32,row*32,32,32);
       } else {
         ctx.fillStyle='#9a9993';ctx.fillRect(c*32,row*32,32,32);
         sprite((r+c)%9===0?'floor-cables':(r+c)%5===0?'floor-grate':'floor-plate',p.x,p.y,0,1,.8);
@@ -160,7 +163,7 @@ function render(now) {
       ctx.strokeStyle='rgba(15,15,15,.24)';ctx.lineWidth=.5;ctx.strokeRect(c*32,row*32,32,32);
       if(t&&/^[A-Z1-3]$/.test(t)) {ctx.font='bold 9px monospace';ctx.fillStyle='#111';ctx.fillRect(c*32,row*32,10,11);ctx.fillStyle='#fff';ctx.fillText(t,c*32+2,row*32+9);}
     }
-    for(const item of state.items.filter(i=>i.holder===-1&&i.dropped)) {const p=point(item.r,item.c);sprite(manifest.items[item.name],p.x,p.y,0,.58);}
+    for(const item of state.items.filter(i=>i.holder===-1&&i.dropped&&seen(i.r,i.c))) {const p=point(item.r,item.c);sprite(manifest.items[item.name],p.x,p.y,0,.58);}
     for(const e of state.entities) {
       if(e.extracted)continue;
       const move=motions.get(e.id),m=move&&progress<1;
@@ -168,6 +171,7 @@ function render(now) {
       let angle=m?move.a+(move.b-move.a)*progress:e.team===0?e.facing*Math.PI/2:bugFacing.get(e.id)||0;
       if(e.team===1)angle-=manifest.bugs[bugNames[e.bug]].artFacing*Math.PI/2;
       let name=e.team===0?'crew-'+weaponNames[e.weapon]+'-idle':e.team===2?'blip':'bug-'+bugNames[e.bug];
+      if(!e.alive&&!seen(e.r,e.c))continue;
       if(!e.alive) {sprite(e.team===0?'marine-fallen':'bug-fallen',p.x,p.y,angle,.82,.4);continue;}
       if(m&&(move.from.r!==e.r||move.from.c!==e.c)) {
         const pose=Math.floor(progress*4)%2===0?'left':'right';name=e.team===0?'crew-'+weaponNames[e.weapon]+'-'+pose:e.team===1?'bug-'+bugNames[e.bug]+'-'+pose:'blip';
@@ -183,6 +187,7 @@ function render(now) {
     }
     effects=effects.filter(e=>now<e.start+e.life);
     for(const fx of effects) {
+      if(!seen(fx.from.r,fx.from.c)||!seen(fx.to.r,fx.to.c))continue;
       const t=Math.max(0,Math.min(1,(now-fx.start)/fx.life)),a=point(fx.from.r,fx.from.c),b=point(fx.to.r,fx.to.c),angle=heading(fx.from,fx.to);
       if(fx.weapon==='jam') {sprite('jam',a.x,a.y,0,1,1-t);continue;}
       if(fx.weapon==='claw') {sprite('claw-slash',b.x,b.y,angle,1,1-t);continue;}
