@@ -33,7 +33,7 @@ static int step(const SHGame *g,int actor,int goal_r,int goal_c,int *next_r,int 
     while(head<tail && parent[end]<0) {
         v=queue[head++];r=v/SH_COLS;c=v%SH_COLS;
         for(i=0;i<4;i++) {
-            nr=r+dy[i];nc=c+dx[i];if(nr<0||nc<0||nr>=SH_ROWS||nc>=SH_COLS||sh_tile(g,nr,nc)=='#') continue;
+            nr=r+dy[i];nc=c+dx[i];if(nr<0||nc<0||nr>=SH_ROWS||nc>=SH_COLS||(!sh_tile_is_floor(sh_tile(g,nr,nc))&&sh_tile(g,nr,nc)!=SH_CLOSED_DOOR)) continue;
             n=nr*SH_COLS+nc;if(parent[n]>=0||at(g,nr,nc)>=0) continue;
             parent[n]=v;queue[tail++]=n;
         }
@@ -127,7 +127,7 @@ static void marine_turn(SHGame *g,int mission,int id) {
             if(e.row==r&&e.col==c) {
                 if(sh_action(g,action(SH_INTERACT,0,0,inspect_target(g),1))==SH_OK)continue;
             } else if(step(g,id,r,c,&y,&x)) {
-                if(sh_tile(g,y,x)=='+') {
+                if(sh_tile(g,y,x)==SH_CLOSED_DOOR) {
                     if(sh_action(g,action(SH_DOOR,y,x,-1,0))==SH_OK)continue;
                 } else {
                     int want=facing(e.row,e.col,y,x);
@@ -141,7 +141,7 @@ static void marine_turn(SHGame *g,int mission,int id) {
             /* Separate guard stations keep objectives and the extraction hatch free. */
             r=15;c=id==1?9:id==3?21:15;
             if(e.row!=r||e.col!=c) if(step(g,id,r,c,&y,&x)) {
-                if(sh_action(g,action(sh_tile(g,y,x)=='+'?SH_DOOR:SH_MOVE,y,x,-1,0))==SH_OK)continue;
+                if(sh_action(g,action(sh_tile(g,y,x)==SH_CLOSED_DOOR?SH_DOOR:SH_MOVE,y,x,-1,0))==SH_OK)continue;
             }
         }
         if(e.jammed&&e.ap>=1) {if(sh_action(g,action(SH_CLEAR_JAM,0,0,-1,0))==SH_OK)continue;}
@@ -168,11 +168,11 @@ static void alien_turn(SHGame *g,int id) {
         for(i=0;i<4;i++) {
             static const int dy[]={-1,0,1,0},dx[]={0,1,0,-1};
             int gr=m.row+dy[i],gc=m.col+dx[i];
-            if(gr<0||gc<0||gr>=SH_ROWS||gc>=SH_COLS||sh_tile(g,gr,gc)=='#'||at(g,gr,gc)>=0)continue;
+            if(gr<0||gc<0||gr>=SH_ROWS||gc>=SH_COLS||(!sh_tile_is_floor(sh_tile(g,gr,gc))&&sh_tile(g,gr,gc)!=SH_CLOSED_DOOR)||at(g,gr,gc)>=0)continue;
             if(step(g,id,gr,gc,&y,&x)){r=y;c=x;break;}
         }
         if(r<0)break;
-        if(sh_action(g,action(sh_tile(g,r,c)=='+'?SH_DOOR:SH_MOVE,r,c,-1,0))!=SH_OK)break;
+        if(sh_action(g,action(sh_tile(g,r,c)==SH_CLOSED_DOOR?SH_DOOR:SH_MOVE,r,c,-1,0))!=SH_OK)break;
         reactions(g);
     }
     if(sh_status(g).active==id)(void)sh_end_activation(g);
@@ -186,7 +186,7 @@ static int valid_state(const SHGame *g) {
     for(i=0;i<s.entities;i++) {
         if(!sh_entity(g,i,SH_MARINE,&e) || e.id!=i || e.ap<0) return 0;
         if(!alive(&e)) continue;
-        if(e.wounds<=0 || e.row<0 || e.row>=SH_ROWS || e.col<0 || e.col>=SH_COLS || sh_tile(g,e.row,e.col)=='#' || sh_tile(g,e.row,e.col)=='+') return 0;
+        if(e.wounds<=0 || e.row<0 || e.row>=SH_ROWS || e.col<0 || e.col>=SH_COLS || !sh_tile_is_floor(sh_tile(g,e.row,e.col))) return 0;
         if(e.team==SH_MARINE && (e.ammunition < -1 || e.frag<0 || e.stun<0)) return 0;
         for(j=0;j<i;j++) {
             sh_entity(g,j,SH_MARINE,&other);

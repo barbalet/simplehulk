@@ -48,3 +48,19 @@ same reports. Run the executable from the repository root so `build/` exists.
 
 Generated objects, executables, and game reports stay in ignored `build/`.
 Sanitizer binaries use `build/sanitize/`, keeping the regular build separate.
+
+## Outlined hull regression checks
+
+`make maps-check` runs `check_maps.py` (Python 3, standard library only) and
+compares all 225 map rows with RULES/FLUFF, padding omitted exterior cells.
+It also runs as part of `make smoke` and `make wasm-test`.
+
+The smoke suite verifies that normalizing the outlined maps back to their
+original topology preserves all nine layouts, using fixed per-map hashes.
+Fixtures check every wall glyph and blank space against movement, sight, door
+and grenade actions; rejected actions preserve AP and grenades. Closed-door
+open/close/move cycles and cramped reveals distinguish `=` from wall corner `+`.
+The scenario bots route through floor and operable doors, never exterior cells.
+
+`make wasm-test` additionally covers every hull asset connectivity mask, browser
+tile classification, native/WASM parity, and legal endings for all nine missions.

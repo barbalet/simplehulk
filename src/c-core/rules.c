@@ -56,7 +56,9 @@ const char *sh_result_name(SHResult r) {
     return r>=SH_OK && r<=SH_GAME_OVER ? labels[r] : "unknown result";
 }
 const char *sh_last_error(const SHGame *g) { return g?g->error:"null game"; }
-char sh_tile(const SHGame *g,int r,int c) { return g && valid(r,c)?g->board[r][c]:'#'; }
+char sh_tile(const SHGame *g,int r,int c) { return g && valid(r,c)?g->board[r][c]:SH_VOID; }
+int sh_tile_is_wall(char tile) {return tile=='+'||tile=='|'||tile=='-'||tile=='#';}
+int sh_tile_is_floor(char tile) {return tile=='.'||tile==SH_OPEN_DOOR||(tile>='A'&&tile<='Z')||(tile>='1'&&tile<='3');}
 SHStatus sh_status(const SHGame *g) { SHStatus empty;memset(&empty,0,sizeof empty);return g?g->status:empty; }
 int sh_entity(const SHGame *g,int id,SHTeam viewer,SHEntity *out) {
     if(!entity_ok(g,id)||!out) return 0;
@@ -76,13 +78,13 @@ void sh_set_dice(SHGame *g,SHDice dice,void *user) { if(g) {g->dice=dice;g->dice
 void sh_set_reveal_policy(SHGame *g,SHRevealPolicy policy,void *user) { if(g) {g->reveal_policy=policy;g->reveal_user=user;} }
 static int blocker(const SHGame *g,int r,int c,int from,int target) {
     int id;
-    if(!valid(r,c)||g->board[r][c]=='#'||g->board[r][c]=='+') return 1;
+    if(!valid(r,c)||!sh_tile_is_floor(g->board[r][c])) return 1;
     id=occupied(g,r,c);return id>=0 && id!=from && id!=target;
 }
 int sh_can_see(const SHGame *g,int from,int row,int col) {
     const SHEntity *e; int r,c,nr,nc,ir=0,ic=0,sr,sc,target;
     if(!entity_ok(g,from)||!valid(row,col)||!g->entity[from].alive||g->entity[from].extracted) return 0;
-    if(g->board[row][col]=='#'||g->board[row][col]=='+') return 0;
+    if(!sh_tile_is_floor(g->board[row][col])) return 0;
     e=&g->entity[from];r=e->row;c=e->col;nr=abs(row-r);nc=abs(col-c);
     sr=row>r?1:-1;sc=col>c?1:-1;target=occupied(g,row,col);
     while(ir<nr || ic<nc) {
@@ -201,7 +203,7 @@ static int reveal(SHGame *g,int id) {
     positions[0][0]=saved.row;positions[0][1]=saved.col;j=1;
     for(d=0;d<4 && j<saved.strength;d++) {
         int r=saved.row+dr[d],c=saved.col+dc[d];
-        if(valid(r,c)&&sh_tile(g,r,c)!='#'&&sh_tile(g,r,c)!='+'&&occupied(g,r,c)<0) {positions[j][0]=r;positions[j++][1]=c;}
+        if(valid(r,c)&&sh_tile_is_floor(sh_tile(g,r,c))&&occupied(g,r,c)<0) {positions[j][0]=r;positions[j++][1]=c;}
     }
     if(g->reveal_policy) {
         int defaults[3][2],survivors=j;memcpy(defaults,positions,sizeof defaults);
@@ -211,7 +213,7 @@ static int reveal(SHGame *g,int id) {
         for(i=1;i<saved.strength;i++) {
             int r=positions[i][0],c=positions[i][1],k;
             if(r==-1&&c==-1) continue;
-            if(!valid(r,c)||distance(saved.row,saved.col,r,c)!=1||sh_tile(g,r,c)=='#'||sh_tile(g,r,c)=='+'||occupied(g,r,c)>=0) invalid=1;
+            if(!valid(r,c)||distance(saved.row,saved.col,r,c)!=1||!sh_tile_is_floor(sh_tile(g,r,c))||occupied(g,r,c)>=0) invalid=1;
             for(k=0;k<i;k++) if(positions[k][0]==r&&positions[k][1]==c) invalid=1;
             j++;
         }
@@ -466,7 +468,7 @@ static SHResult interact(SHGame *g,SHAction a) {
     }
     return fail(g,SH_INVALID,"objective unavailable here or prerequisites unfinished");
 }
-static int area(const SHGame *g,int r,int c,int y,int x) {return valid(y,x)&&distance(r,c,y,x)<=1&&sh_tile(g,y,x)!='#'&&sh_tile(g,y,x)!='+';}
+static int area(const SHGame *g,int r,int c,int y,int x) {return valid(y,x)&&distance(r,c,y,x)<=1&&sh_tile_is_floor(sh_tile(g,y,x));}
 static void blast(SHGame *g,int actor,int r,int c,int stun,int flame) {
     int i,d;
     for(i=5;i<g->status.entities;i++) if(g->entity[i].alive && g->entity[i].team==SH_BLIP && area(g,r,c,g->entity[i].row,g->entity[i].col)) reveal(g,i);
@@ -510,7 +512,7 @@ SHResult sh_action(SHGame *g,SHAction a) {
     switch(a.type) {
     case SH_MOVE:
         if(!valid(a.row,a.col)||distance(e->row,e->col,a.row,a.col)!=1) return fail(g,SH_INVALID,"movement is one orthogonal square");
-        if(sh_tile(g,a.row,a.col)=='#'||sh_tile(g,a.row,a.col)=='+'||occupied(g,a.row,a.col)>=0) return fail(g,SH_BLOCKED,"destination occupied, wall, or closed door");
+        if(!sh_tile_is_floor(sh_tile(g,a.row,a.col))||occupied(g,a.row,a.col)>=0) return fail(g,SH_BLOCKED,"destination occupied, hull wall, exterior, or closed door");
         cost=e->team==SH_MARINE && (a.row-e->row)*dr[e->facing]+(a.col-e->col)*dc[e->facing]<0?2:1;
         if(g->scenario->id==3 && (carried_type(g,id)==ITEM_CAPSULE_L||carried_type(g,id)==ITEM_CAPSULE_R)) cost=2;
         if(pay(g,cost)!=SH_OK) return SH_NO_AP;e->row=a.row;e->col=a.col;
@@ -522,17 +524,17 @@ SHResult sh_action(SHGame *g,SHAction a) {
     case SH_DOOR:case SH_BREACH:
         if(!valid(a.row,a.col)||distance(e->row,e->col,a.row,a.col)!=1) return fail(g,SH_INVALID,"door must be orthogonally adjacent");
         if(a.type==SH_BREACH) {
-            if(!g->options.sealed_bulkheads||sh_tile(g,a.row,a.col)!='+') return fail(g,SH_INVALID,"breach option disabled or door already open");
+            if(!g->options.sealed_bulkheads||sh_tile(g,a.row,a.col)!=SH_CLOSED_DOOR) return fail(g,SH_INVALID,"breach option disabled or door already open");
             cost=2;if(pay(g,cost)!=SH_OK) return SH_NO_AP;i=roll(g);
             if(i>=5) g->board[a.row][a.col]='.';
             emit(g,SH_EVENT_DOOR,id,-1,"Bulkhead breach die %d at (%d,%d).",i,a.row+1,a.col+1);
         } else {
             char tile=sh_tile(g,a.row,a.col);
-            if(tile!='+'&&tile!='/') return fail(g,SH_INVALID,"square is not an operable door");
+            if(tile!=SH_CLOSED_DOOR&&tile!=SH_OPEN_DOOR) return fail(g,SH_INVALID,"square is not an operable door");
             if(occupied(g,a.row,a.col)>=0) return fail(g,SH_BLOCKED,"cannot close an occupied doorway");
             cost=e->team==SH_ALIEN && e->bug==SH_BRUTE?2:1;if(pay(g,cost)!=SH_OK) return SH_NO_AP;
-            g->board[a.row][a.col]=tile=='+'?'/':'+';
-            emit(g,SH_EVENT_DOOR,id,-1,"Entity %d %s door (%d,%d) for %d AP.",id,tile=='+'?"opens":"closes",a.row+1,a.col+1,cost);
+            g->board[a.row][a.col]=tile==SH_CLOSED_DOOR?SH_OPEN_DOOR:SH_CLOSED_DOOR;
+            emit(g,SH_EVENT_DOOR,id,-1,"Entity %d %s door (%d,%d) for %d AP.",id,tile==SH_CLOSED_DOOR?"opens":"closes",a.row+1,a.col+1,cost);
         }
         break;
     case SH_SHOOT:

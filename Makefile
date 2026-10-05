@@ -4,7 +4,7 @@ CPPFLAGS ?= -Isrc/c-core
 CFLAGS ?= -std=c99 -O2 -Wall -Wextra -Wpedantic -Werror
 BUILD ?= build
 CORE := $(BUILD)/rules.o $(BUILD)/scenarios.o
-.PHONY: all smoke scenarios test check rebuild-test sanitize clean wasm wasm-test serve
+.PHONY: all smoke scenarios test check rebuild-test sanitize clean wasm wasm-test serve maps-check
 all: $(BUILD)/libsimplehulk.a $(BUILD)/c-test $(BUILD)/simple-hulk
 $(BUILD):
 	mkdir -p $(BUILD)
@@ -18,7 +18,9 @@ $(BUILD)/c-test: src/c-test/main.c src/c-test/smoke.c src/c-test/runner.c src/c-
 	$(CC) $(CPPFLAGS) $(CFLAGS) src/c-test/main.c src/c-test/smoke.c src/c-test/runner.c $(BUILD)/libsimplehulk.a -o $@
 $(BUILD)/simple-hulk: src/c-core/api_cli.c $(BUILD)/libsimplehulk.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libsimplehulk.a -o $@
-smoke: all
+maps-check:
+	python3 src/c-test/check_maps.py
+smoke: all maps-check
 	./$(BUILD)/c-test --smoke
 	printf 'status\nquit\n' | ./$(BUILD)/simple-hulk 0 42
 scenarios: all
@@ -40,7 +42,8 @@ wasm:
 	./scripts/build_wasm.sh
 $(BUILD)/wasm-parity: src/c-test/wasm-parity.c src/wasm/bridge.c $(BUILD)/libsimplehulk.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) src/c-test/wasm-parity.c src/wasm/bridge.c $(BUILD)/libsimplehulk.a -o $@
-wasm-test: wasm $(BUILD)/wasm-parity
+wasm-test: wasm $(BUILD)/wasm-parity maps-check
 	node src/c-test/wasm-test.mjs
+	node src/c-test/web-ui-test.mjs
 serve:
 	python3 -m http.server 8000

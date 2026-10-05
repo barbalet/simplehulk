@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { CLOSED_DOOR, OPEN_DOOR, isWall, isFloor, wallMask } from '../../web/tiles.js';
 const bytes=readFileSync('web/simple-hulk.wasm');
 assert(WebAssembly.validate(bytes));
 let instance,events=[],checks=0;
@@ -20,16 +21,32 @@ for(const w of Object.values(manifest.weapons)) {required.push(w.projectile,w.im
 for(const b of Object.values(manifest.bugs)) {required.push(b.actor,...b.walk);check(Number.isInteger(b.artFacing)&&b.artFacing>=0&&b.artFacing<4,'Bug source-art heading');}
 for(const g of Object.values(manifest.grenades))required.push(g.projectile,g.impact);
 required.push(...Object.values(manifest.mapMarkers),...Object.values(manifest.items),...manifest.doorFrames,manifest.spitter.projectile,manifest.spitter.impact);
+required.push(...manifest.hull.connections,manifest.hull.exterior,manifest.hull.damagedHorizontal,manifest.hull.damagedVertical,manifest.hull.alarm);
+check(manifest.hull.connections.length===16,'All hull connectivity cases');
+check(manifest.hull.closedDoorGlyph===CLOSED_DOOR&&manifest.hull.openDoorGlyph===OPEN_DOOR,'Door legend matches renderer');
+for(const tile of ['+','|','-','#',' '])check(!isFloor(tile),'Walls/exterior are not floor');
+for(const tile of ['+','|','-','#'])check(isWall(tile),'Wall classification');
+check(!isWall('=')&&!isWall(' ')&&isFloor('D')&&!isFloor('='),'Doors, corners and entry D stay distinct');
+for(let mask=0;mask<16;mask++) {
+ const map=Array.from({length:3},()=>Array(3).fill(' '));map[1][1]='+';
+ for(const [r,c,bit] of [[0,1,1],[1,2,2],[2,1,4],[1,0,8]])if(mask&bit)map[r][c]='|';
+ check(wallMask(map,1,1)===mask,`Hull join ${mask}`);
+}
 for(const name of required)check(!!manifest.sprites[name],`Missing required art: ${name}`);
 function command(trace,op,a=0,b=0,c=0,d=-1){const args=[op,a,b,c,d],result=api.command(...args);trace.push({args,result,state:snapshot()});return result;}
 for(let mission=0;mission<9;mission++) {
  const specialist=mission%4;events=[];check(api.start(mission,2026,specialist,0)===1,'Create mission');
  const initial=snapshot(),trace=[];
  check(initial.map.length===25&&initial.map.every(row=>row.length===31),'Book map dimensions');
+ check(initial.map.some(row=>row.includes(' '))&&!initial.map.some(row=>row.includes('#')),'Outlined hull has exterior gaps');
+ check(initial.map.some(row=>row.includes('='))&&initial.map.some(row=>row.includes('+')),'Distinct walls and closed doors');
  check(initial.entities.filter(e=>e.team===0).length===5,'Five Marines');
  check(initial.entities.filter(e=>e.team===2).every(e=>e.strength===-1),'Marine view hides contact strengths');
  check(snapshot(1).entities.filter(e=>e.team===2).every(e=>e.strength>0),'Alien view exposes contact strengths');
  check(command(trace,0,0)===0,'Activate');const m=snapshot().entities[0];
+ check(command(trace,1,0,m.r+1,m.c,-1)===4,'Hull wall blocks movement');
+ check(command(trace,1,2,m.r+1,m.c,-1)===1,'Hull wall is not an operable door');
+ check(snapshot().entities[0].ap===4,'Rejected hull actions spend no AP');
  check(command(trace,1,0,m.r-1,m.c,-1)===0,'Move north');check(snapshot().entities[0].ap===3,'Movement costs AP');
  check(command(trace,1,0,0,0,-1)!==0,'Reject teleport');
  check(command(trace,1,7,0,0,-1)===0,'Overwatch');check(snapshot().entities[0].ow===1&&snapshot().active===-1,'Overwatch ends activation');

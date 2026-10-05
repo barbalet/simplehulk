@@ -27,6 +27,11 @@
       "file": "marines-atlas.png",
       "columns": 4,
       "rows": 3
+    },
+    "outline": {
+      "file": "hull-outline-atlas.png",
+      "columns": 4,
+      "rows": 5
     }
   },
   "sprites": {
@@ -397,6 +402,86 @@
     "crew-flame-right": {
       "sheet": "marines",
       "index": 11
+    },
+    "hull-join-00": {
+      "sheet": "outline",
+      "index": 0
+    },
+    "hull-join-01": {
+      "sheet": "outline",
+      "index": 1
+    },
+    "hull-join-02": {
+      "sheet": "outline",
+      "index": 2
+    },
+    "hull-join-03": {
+      "sheet": "outline",
+      "index": 3
+    },
+    "hull-join-04": {
+      "sheet": "outline",
+      "index": 4
+    },
+    "hull-join-05": {
+      "sheet": "outline",
+      "index": 5
+    },
+    "hull-join-06": {
+      "sheet": "outline",
+      "index": 6
+    },
+    "hull-join-07": {
+      "sheet": "outline",
+      "index": 7
+    },
+    "hull-join-08": {
+      "sheet": "outline",
+      "index": 8
+    },
+    "hull-join-09": {
+      "sheet": "outline",
+      "index": 9
+    },
+    "hull-join-10": {
+      "sheet": "outline",
+      "index": 10
+    },
+    "hull-join-11": {
+      "sheet": "outline",
+      "index": 11
+    },
+    "hull-join-12": {
+      "sheet": "outline",
+      "index": 12
+    },
+    "hull-join-13": {
+      "sheet": "outline",
+      "index": 13
+    },
+    "hull-join-14": {
+      "sheet": "outline",
+      "index": 14
+    },
+    "hull-join-15": {
+      "sheet": "outline",
+      "index": 15
+    },
+    "exterior-space": {
+      "sheet": "outline",
+      "index": 16
+    },
+    "hull-damage-horizontal": {
+      "sheet": "outline",
+      "index": 17
+    },
+    "hull-damage-vertical": {
+      "sheet": "outline",
+      "index": 18
+    },
+    "hull-alarm": {
+      "sheet": "outline",
+      "index": 19
     }
   },
   "weapons": {
@@ -503,5 +588,44 @@
     "right sample": "sample",
     "crew ledger": "ledger",
     "authorization key": "key"
+  },
+  "hull": {
+    "connections": [
+      "hull-join-00",
+      "hull-join-01",
+      "hull-join-02",
+      "hull-join-03",
+      "hull-join-04",
+      "hull-join-05",
+      "hull-join-06",
+      "hull-join-07",
+      "hull-join-08",
+      "hull-join-09",
+      "hull-join-10",
+      "hull-join-11",
+      "hull-join-12",
+      "hull-join-13",
+      "hull-join-14",
+      "hull-join-15"
+    ],
+    "connectionBits": {
+      "north": 1,
+      "east": 2,
+      "south": 4,
+      "west": 8
+    },
+    "exterior": "exterior-space",
+    "damagedHorizontal": "hull-damage-horizontal",
+    "damagedVertical": "hull-damage-vertical",
+    "alarm": "hull-alarm",
+    "wallGlyphs": [
+      "+",
+      "|",
+      "-",
+      "#"
+    ],
+    "voidGlyph": " ",
+    "closedDoorGlyph": "=",
+    "openDoorGlyph": "/"
   }
 }

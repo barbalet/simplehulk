@@ -9,7 +9,8 @@ static void feedback(const SHEvent *event, void *user) {
     printf("[round %02d / AP %d] %s\n", event->round, event->ap, event->message);
 }
 static void help(void) {
-    puts("Commands (map coordinates are one-based):\n"
+    puts("Map: + | - hull walls, blank exterior, = closed door, / open door, . floor.\n"
+         "Commands (map coordinates are one-based):\n"
          "  map | status | units | items | view marine|alien\n"
          "  activate ID | move ROW COL | turn north|east|south|west\n"
          "  door ROW COL | shoot TARGET | flame ROW COL | melee TARGET\n"

@@ -16,7 +16,7 @@ static SHAction act(SHActionType type,int r,int c,int target,int option) {
 static SHGame *fixture(int mission) {
     SHGame *g=sh_create(mission,123,NULL,NULL,NULL);int r,c,i;
     if(!g) return NULL;
-    for(r=0;r<SH_ROWS;r++) for(c=0;c<SH_COLS;c++) g->board[r][c]=r==0||c==0||r==SH_ROWS-1||c==SH_COLS-1?'#':'.';
+    for(r=0;r<SH_ROWS;r++) for(c=0;c<SH_COLS;c++) g->board[r][c]=r==0||r==SH_ROWS-1?'-':c==0||c==SH_COLS-1?'|':'.';
     g->status.entities=5;g->status.active=-1;g->status.pending_target=-1;
     for(i=0;i<5;i++){g->entity[i].row=i?20:10;g->entity[i].col=i?2+i*3:10;g->entity[i].ap=4;g->entity[i].done=0;g->entity[i].alive=1;}
     return g;
@@ -66,7 +66,7 @@ static void test_movement_sight(void) {
     CHECK(sh_end_activation(g)==SH_OK);CHECK(sh_activate(g,0)==SH_INVALID);CHECK(sh_activate(g,a)==SH_WRONG_PHASE);
     g->entity[0].row=10;g->entity[0].col=10;g->entity[0].facing=SH_NORTH;
     CHECK(sh_can_see(g,0,9,11));g->board[10][11]='#';CHECK(!sh_can_see(g,0,9,11));g->board[10][11]='.';
-    g->board[9][10]='+';CHECK(!sh_can_see(g,0,8,10));g->board[9][10]='/';CHECK(sh_can_see(g,0,8,10));
+    g->board[9][10]=SH_CLOSED_DOOR;CHECK(!sh_can_see(g,0,8,10));g->board[9][10]='/';CHECK(sh_can_see(g,0,8,10));
     g->entity[a].row=11;g->entity[a].col=10;CHECK(sh_can_see(g,0,11,10));CHECK(!sh_can_shoot(g,0,a));
     g->entity[a].row=10;g->entity[a].col=18;CHECK(sh_can_shoot(g,0,a));g->entity[a].col=19;CHECK(!sh_can_shoot(g,0,a));
     sh_destroy(g);
@@ -106,7 +106,7 @@ static void test_weapons_blips(void) {
     CHECK(sh_activate(g,0)==SH_OK);CHECK(sh_action(g,act(SH_STUN,8,10,-1,0))==SH_OK);
     CHECK(sh_action(g,act(SH_STUN,8,10,-1,0))==SH_NO_AMMO);CHECK(sh_end_activation(g)==SH_OK);alien_phase(g);
     CHECK(g->entity[a].ap==4);CHECK(sh_end_phase(g)==SH_OK);CHECK(!g->entity[a].stunned);sh_destroy(g);
-    g=fixture(0);g->board[9][10]='+';a=enemy(g,8,10,SH_BLIP,SH_BASIC,3);alien_phase(g);
+    g=fixture(0);g->board[9][10]=SH_CLOSED_DOOR;a=enemy(g,8,10,SH_BLIP,SH_BASIC,3);alien_phase(g);
     CHECK(sh_activate(g,a)==SH_OK);CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);
     CHECK(g->entity[a].team==SH_ALIEN&&g->entity[a].ap==5);CHECK(g->status.entities==8);
     for(i=5;i<8;i++)CHECK(g->entity[i].ap==5);
@@ -167,7 +167,7 @@ static void test_optional(void) {
     g=fixture(0);g->options.reliable_bursts=1;a=enemy(g,9,10,SH_ALIEN,SH_BASIC,0);dice(g,&d,1,6);
     CHECK(sh_activate(g,0)==SH_OK);CHECK(sh_action(g,act(SH_OVERWATCH,0,0,-1,0))==SH_OK);alien_phase(g);
     CHECK(sh_activate(g,a)==SH_OK);CHECK(sh_action(g,act(SH_MOVE,8,10,-1,0))==SH_OK);CHECK(sh_react(g,0,1)==SH_OK);CHECK(!g->entity[0].jammed&&!g->entity[a].alive);sh_destroy(g);
-    g=fixture(0);g->options.sealed_bulkheads=1;g->board[9][10]='+';dice(g,&d,5,5);
+    g=fixture(0);g->options.sealed_bulkheads=1;g->board[9][10]=SH_CLOSED_DOOR;dice(g,&d,5,5);
     CHECK(sh_activate(g,0)==SH_OK);CHECK(sh_action(g,act(SH_BREACH,9,10,-1,0))==SH_OK);CHECK(g->board[9][10]=='.');sh_destroy(g);
     g=fixture(0);a=enemy(g,7,10,SH_ALIEN,SH_SPITTER,0);dice(g,&d,4,4);alien_phase(g);
     CHECK(sh_activate(g,a)==SH_OK);CHECK(g->entity[a].ap==5);CHECK(sh_action(g,act(SH_SHOOT,0,0,0,0))==SH_OK);CHECK(g->entity[0].wounds==1);sh_destroy(g);
@@ -180,7 +180,7 @@ static void choose_east(int contact,int strength,int row,int col,int positions[3
 }
 static void test_reveal_choices(void) {
     SHGame *g=fixture(0);Dice d;int a,b;
-    g->board[9][10]='+';a=enemy(g,8,10,SH_BLIP,SH_BASIC,2);
+    g->board[9][10]=SH_CLOSED_DOOR;a=enemy(g,8,10,SH_BLIP,SH_BASIC,2);
     sh_set_reveal_policy(g,choose_east,NULL);
     CHECK(sh_activate(g,0)==SH_OK);CHECK(sh_action(g,act(SH_OVERWATCH,0,0,-1,0))==SH_OK);alien_phase(g);
     CHECK(sh_activate(g,a)==SH_OK);CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);
@@ -191,7 +191,7 @@ static void test_reveal_choices(void) {
     CHECK(sh_finish_reactions(g)==SH_OK);CHECK(sh_activate(g,a)==SH_OK);
     CHECK(sh_action(g,act(SH_MOVE,9,10,-1,0))==SH_OK);CHECK(g->status.pending_target==a);
     CHECK(sh_react(g,0,1)==SH_OK);CHECK(sh_finish_reactions(g)==SH_OK);sh_destroy(g);
-    g=fixture(0);g->board[9][10]='+';a=enemy(g,8,10,SH_BLIP,SH_BASIC,1);b=enemy(g,7,10,SH_BLIP,SH_SKITTER,1);
+    g=fixture(0);g->board[9][10]=SH_CLOSED_DOOR;a=enemy(g,8,10,SH_BLIP,SH_BASIC,1);b=enemy(g,7,10,SH_BLIP,SH_SKITTER,1);
     {int i;for(i=1;i<5;i++){g->entity[i].row=10+i;g->entity[i].col=10;}}
     alien_phase(g);CHECK(sh_activate(g,a)==SH_OK);CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);
     CHECK(g->entity[a].team==SH_ALIEN&&g->entity[b].team==SH_BLIP);
@@ -215,8 +215,50 @@ static void test_ghost_and_quarry(void) {
     objective(g,0,'L');objective(g,0,'R');station(g,0,'X');
     CHECK(sh_action(g,act(SH_INTERACT,0,0,-1,0))==SH_INVALID);CHECK(g->entity[0].ap==4);sh_destroy(g);
 }
+static void test_hull(void) {
+    static const uint32_t original[SH_SCENARIOS]={2592116546u,253751627u,1261142206u,2330677357u,2953926176u,212149059u,2453821150u,1714748177u,3796873291u};
+    const char blocked[]={'+','|','-','#',' '};int i,r,c,mission,spaces,walls,doors;SHGame *g;uint32_t hash;
+    for(mission=0;mission<SH_SCENARIOS;mission++) {
+        const SHScenario *s=sh_scenario(mission);hash=2166136261u;spaces=walls=doors=0;
+        for(r=0;r<SH_ROWS;r++) {
+            CHECK(strlen(s->map[r])==SH_COLS);
+            for(c=0;c<SH_COLS;c++) {
+                char tile=s->map[r][c],legacy=tile;
+                if(tile==' ')spaces++;
+                if(sh_tile_is_wall(tile))walls++;
+                if(tile==SH_CLOSED_DOOR)doors++;
+                if(tile==' '||sh_tile_is_wall(tile))legacy='#';
+                else if(tile==SH_CLOSED_DOOR)legacy='+';
+                hash=(hash^(unsigned char)legacy)*16777619u;
+            }
+        }
+        CHECK(hash==original[mission]); /* Original routes, coordinates and doors. */
+        CHECK(spaces>0&&walls>0&&doors>0);
+        g=sh_create(mission,42,NULL,NULL,NULL);CHECK(sh_tile(g,-1,0)==SH_VOID);CHECK(sh_tile(g,SH_ROWS,0)==SH_VOID);sh_destroy(g);
+    }
+    CHECK(sh_tile_is_floor('.')&&sh_tile_is_floor('/')&&sh_tile_is_floor('D'));
+    CHECK(!sh_tile_is_floor('=')&&!sh_tile_is_floor('\0')&&!sh_tile_is_wall(' '));
+    for(i=0;i<(int)sizeof blocked;i++) {
+        g=fixture(0);g->board[9][10]=blocked[i];
+        CHECK(!sh_tile_is_floor(blocked[i]));CHECK(sh_tile_is_wall(blocked[i])==(blocked[i]!=' '));
+        CHECK(sh_activate(g,0)==SH_OK);CHECK(!sh_can_see(g,0,8,10));
+        CHECK(sh_action(g,act(SH_MOVE,9,10,-1,0))==SH_BLOCKED);
+        CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_INVALID);
+        CHECK(sh_action(g,act(SH_FRAG,9,10,-1,0))==SH_NOT_VISIBLE);
+        CHECK(g->entity[0].ap==4&&g->entity[0].frag==1);sh_destroy(g);
+    }
+    g=fixture(0);g->board[9][10]=SH_CLOSED_DOOR;CHECK(sh_activate(g,0)==SH_OK);
+    CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);CHECK(sh_tile(g,9,10)==SH_OPEN_DOOR);
+    CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);CHECK(sh_tile(g,9,10)==SH_CLOSED_DOOR);
+    CHECK(sh_action(g,act(SH_DOOR,9,10,-1,0))==SH_OK);CHECK(sh_action(g,act(SH_MOVE,9,10,-1,0))==SH_OK);
+    CHECK(g->entity[0].ap==0);sh_destroy(g);
+    g=fixture(0);g->board[8][10]=SH_VOID;g->board[9][9]='|';g->board[9][11]='+';
+    i=enemy(g,9,10,SH_BLIP,SH_BASIC,3);CHECK(sh_activate(g,0)==SH_OK);
+    CHECK(sh_action(g,act(SH_TURN,0,0,-1,SH_EAST))==SH_OK);
+    CHECK(g->entity[i].team==SH_ALIEN&&g->status.entities==6);sh_destroy(g);
+}
 int smoke_tests(void) {
-    checks=failures=0;test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
+    checks=failures=0;test_hull();test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
     printf("Smoke tests: %d checks, %d failures (actions, sight, overwatch, items, arrivals, all mission objectives).\n",checks,failures);
     return failures;
 }

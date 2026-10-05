@@ -24,25 +24,37 @@ the tests; Python serves the files.
 
 ## Play
 
-Choose mission, seed, optional bugs and a house rule, then Start mission.
-Select a roster model to activate it. Click a square or model to choose the
-destination/target, then execute an action. Coordinate controls provide the
-same choices without precise map clicks. Turn with facing buttons. End an
-activation before choosing another model. Interact collects mission equipment
-and operates stations; Pick up handles dropped items.
+Choose a scenario and rules version from the single Play dropdown. It groups
+all nine missions and preserves every optional bug / house-rule combination.
+Seed, animation and private-view overrides live in Preferences. Current team
+view follows the phase; pass the device before ending a team phase.
 
-End phase switches to deployment when arrivals are due. Deploy at A–F, then
-finish deployment and play aliens. The overwatch panel pauses an alien action:
-each eligible Marine may fire or decline once; Finish reactions resumes it.
-Invalid actions report the engine's reason without changing the board.
+Click a friendly piece to activate it, then click it again for its contextual
+action dropdown. Choose overwatch, turning, attacks, grenades, doors, mission
+interactions or equipment there. Targeted actions prompt for a map square or
+piece; Escape cancels. Dropped items appear by name in the pickup choices.
+End activation is in the same menu; End phase is above the board. During
+reinforcement deployment click entry letters on the map. During a reaction
+window click an overwatching Marine to fire or decline, then Resume alien
+attack. The engine rejects illegal actions without spending resources.
 
-Marine view hides contact strength/profile. Switch to Alien view after passing
-the device. This is a local convenience, not an access-control boundary.
-Reloading or restarting creates a new game; Download game log saves feedback.
+Adjacent empty floor squares are outlined for the active model. Click one or
+drag the active piece one cell to move. Dragging previews the destination; it
+never chains moves or bypasses AP, facing restrictions or overwatch. Drag other
+board space to pan. Pieces start at 64 pixels per cell so the viewport shows a
+useful portion of the map. Wheel / pinch and + / − zoom around the cursor or
+viewport center; Overview fits the whole map and Find active unit recenters it.
+Arrow keys select cells; Enter selects / moves and M opens piece actions.
 
-Fit board shows the whole 32 × 32 display grid, including vacuum padding around
-the 31 × 25 book map. Larger zoom levels scroll. Animation interpolates legal
-cell movements and Marine facings; it never spends AP or resolves dice.
+Marine view hides contact strength/profile. Alien view reveals private data;
+this local hotseat convenience is not an access-control boundary. Restarting
+creates a new game; Preferences → Download log saves engine feedback.
+
+The C maps now use the books' hull outlines: `+`, `|`, `-` are walls, blank is
+exterior, `=` is a closed door, and `/` is open. The renderer connects wall
+neighbors with the new sixteen-join pencil atlas, leaves exterior gaps dark,
+and animates only real doors. `tiles.js` defines the renderer's floor/wall
+classification and neighbor masks; tests exercise all sixteen combinations.
 
 ## Implementation and checks
 
@@ -56,7 +68,8 @@ cell movements and Marine facings; it never spends AP or resolves dice.
 - `make wasm-test` compares every native/WASM snapshot and action result across
   all nine missions, deterministic event replay, legal endings and art coverage.
   These games exercise deadline endings. Native smoke fixtures verify objective
-  victories. Browser checks cover movement, overwatch, views and the inventory.
+  victories. The UI regression test covers contextual actions, board movement, deployment,
+  reactions and zoom without a browser.
 
 Build references: [Clang freestanding builds](https://clang.llvm.org/docs/UsersManual.html#freestanding-builds)
 and [LLVM WebAssembly linker](https://lld.llvm.org/WebAssembly.html).

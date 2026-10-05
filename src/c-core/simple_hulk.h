@@ -12,6 +12,9 @@ extern "C" {
 #define SH_COLS 31
 #define SH_SCENARIOS 9
 #define SH_MAX_ENTITIES 96
+#define SH_VOID ' '
+#define SH_CLOSED_DOOR '='
+#define SH_OPEN_DOOR '/'
 
 typedef struct SHGame SHGame;
 typedef enum { SH_MARINE, SH_ALIEN, SH_BLIP } SHTeam;
@@ -110,6 +113,10 @@ SHStatus sh_status(const SHGame *game);
 int sh_entity(const SHGame *game, int id, SHTeam viewer, SHEntity *out);
 int sh_item(const SHGame *game, int id, SHItem *out);
 char sh_tile(const SHGame *game, int row, int col);
+/* + | - are walls; blank is inaccessible exterior. # remains a solid-wall
+   compatibility glyph. Closed doors are =, never +. Out-of-bounds tiles are blank. */
+int sh_tile_is_wall(char tile);
+int sh_tile_is_floor(char tile);
 const char *sh_last_error(const SHGame *game);
 const char *sh_result_name(SHResult result);
 const char *sh_weapon_name(SHWeapon weapon);

@@ -43,7 +43,7 @@ Cover assets and their generation prompts are in `output/pdf/`.
 
 The browser uses the C engine for all nine missions and provides local hotseat
 play, a 32 × 32 display grid, walking/turning sprites, sliding doors, weapon and
-grenade effects, and explicit overwatch reactions. The three grayscale pencil
+grenade effects, and explicit overwatch reactions. The four grayscale pencil
 atlases and their prompts are in [assets](assets/README.md).
 
 ```sh

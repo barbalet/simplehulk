@@ -16,6 +16,26 @@ The arguments are mission ID and random seed. ID 0 is Wake the beacon; IDs 1–8
 correspond to the eight numbered scenarios in the FLUFF book. `help` lists the
 commands. The CLI uses one-based map coordinates; C API coordinates are zero-based.
 
+## Hull map cells
+
+All nine `SHScenario.map` arrays match the outlined maps in RULES and FLUFF,
+including their blank exterior cells. Rows remain exactly 31 characters wide;
+the books omit trailing blank cells when printing. Objectives and paths retain
+their original coordinates.
+
+`+`, `|`, `-` are hull walls, blank is inaccessible exterior, `=` is a closed
+door, `/` is an open door, and `.` or a mission letter/number is floor. In
+particular, entry `D` is floor and wall corner `+` is never a door. `#` is still
+recognized as a solid wall for caller-created boards, but published maps use
+outlines. `sh_tile` returns blank for out-of-bounds coordinates.
+
+Use `sh_tile_is_wall` and `sh_tile_is_floor` when inspecting cells. For a route
+planner, allow floor or `SH_CLOSED_DOOR`, then open the door before entering.
+Closed doors, walls and exterior block both movement and sight, are excluded
+from blast/reveal placement, and cannot host arriving contacts. Door actions
+operate only `SH_CLOSED_DOOR` / `SH_OPEN_DOOR`; hull corners cannot be opened or
+breached. The same classifiers are used by the core and native test bots.
+
 ## Calling the API
 
 ```c

@@ -2,7 +2,7 @@
 
 [Inventory](index.html) · [Manifest](manifest.json) · [Generation prompts](ARTWORK.md)
 
-There are **92 named sprite cells across three PNG atlases**. These are the sole
+There are **112 named sprite cells across four PNG atlases**. These are the sole
 source files for the browser's game artwork.
 
 | Atlas | Layout | Contents |
@@ -10,6 +10,7 @@ source files for the browser's game artwork.
 | hulk-atlas.png | 8 × 8 | Floor, hull, five sliding-door stages, breach, vacuum, supplemental crew, four bug profiles and walks, blip, casualties, weapons and grenades |
 | mission-atlas.png | 4 × 4 | Every mission equipment category, acid impact, stun, overwatch and jam markers |
 | marines-atlas.png | 4 × 3 | Overhead Marines: rifle, scattergun, cannon and flame projector; idle and two walking poses for each |
+| hull-outline-atlas.png | 4 × 5 | Sixteen connected wall joins, exterior space, horizontal/vertical damaged walls and a hull lamp |
 
 The current rules have four ranged weapons following the requested removal;
 all four are covered. Both fragmentation and stun grenades have projectiles and
@@ -31,9 +32,12 @@ are drawn separately to preserve the books' map symbols.
 - Blips retain their contact sprite until revealed. Hidden strength/profile
   never changes their Marine-view appearance. Reveals place surviving siblings
   on legal neighboring cells.
-- Doors play five sliding frames forward/backward. Breached doors show rubble
-  during their transition. Hull seams have subtle animated lighting; cracks,
-  corners and rubble are available for later map variants.
+- Doors (`=` closed, `/` open) play five sliding frames forward/backward.
+  Breached doors show rubble during their transition. Hull walls (`+`, `|`, `-`)
+  connect using a four-bit neighbor mask: north 1, east 2, south 4, west 8.
+  The new sixteen-join atlas replaces filled wall blocks. Blank exterior cells
+  draw sparse space art instead of floor; corners cannot animate as doors.
+  Hull joins have subtle animated lighting. Damage/lamp art supports later variants.
 - Muzzle flashes, projectiles, impacts, area bursts, death and status markers
   share the grid. Area effects cover only the center and eligible orthogonal
   neighbors. Effects are cosmetic; engine feedback determines actual damage.
