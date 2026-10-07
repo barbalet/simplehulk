@@ -6,6 +6,7 @@ const SIZE = 32, OFFSET = 3, names = ['Vale','Iona','Kes','Rook','Sen'];
 const weaponNames = ['rifle','scattergun','cannon','flame'], bugNames = ['basic','skitter','brute','spitter'];
 let engine, state, previous, manifest, sheets = {}, selected = {r:22,c:12}, effects = [], doors = [], motions = new Map(), bugFacing = new Map();
 let menuUnit = -1, intent = null, cellSize = 64, pointers = new Map(), gesture = null, pinch = null;
+let routeToken = 0;
 let batch = [], history = [], movingUntil = 0, clock = 0, locked = false, lastResult = '', missionId = 0, gameSeed = 2026;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 $('motion').checked = !reduce;
@@ -73,13 +74,15 @@ function perform(...args) {
   if(result)log(`Action rejected: ${lastResult}`,true);
   read();sync(previous,state,args);update();
   if(movingUntil>performance.now()) {locked=true;update();setTimeout(()=>{locked=false;update();},270);}
+  return !result;
 }
 function update() {
   const phases=['Marines','Deploy contacts','Aliens','Finished'], active=get(state,state.active);
   $('status').textContent=`Round ${state.round}/${state.deadline} · ${phases[state.phase]} · ${active?label(active)+' / '+active.ap+' AP':'select a piece'} · objectives ${state.objectives} · evacuated ${state.evacuated}${state.outcome?' · '+(state.outcome===1?'Marines win':'Aliens win'):''}${lastResult?' · '+lastResult:''}`;
   $('phase').textContent=state.pending>=0?'Resume alien attack':state.phase===1?'Finish deployment':'End phase';
   $('phase').disabled=locked||!!state.outcome;
-  $('do-action').disabled=locked||!!state.outcome;
+  for(const button of $('unit-actions').children)button.disabled=locked||!!state.outcome;
+  $('unit-picker').replaceChildren(...state.entities.filter(e=>alive(e)&&((state.phase===0||state.pending>=0)?e.team===0:e.team!==0)).map(e=>{const button=document.createElement('button');button.textContent=`${label(e)} · ${e.ap} AP${e.done?' · done':''}`;button.disabled=locked||!!state.outcome;button.onclick=()=>{boardClick({r:e.r,c:e.c});const p=point(e.r,e.c),box=canvas.parentElement;box.scrollLeft=p.x/32*cellSize-box.clientWidth/2;box.scrollTop=p.y/32*cellSize-box.clientHeight/2;};return button;}));
   if(menuUnit>=0&&!$('context').hidden)populateMenu();
 }
 function label(e) {return e.team===0?names[e.id]||'Marine':e.team===2?'Contact':'Alien '+bugNames[e.bug];}
@@ -89,40 +92,42 @@ function select(r,c,target=-1) {
   $('square').textContent=`(${r+1},${c+1}) · ${e?label(e)+' · '+e.ap+' AP':kind}`;
 }
 function closeMenu(){ $('context').hidden=true;menuUnit=-1; }
-function cancelIntent(){intent=null;canvas.classList.remove('targeting');$('hint').textContent='Click a friendly piece to activate; click it again for actions. Click an adjacent square or drag the active piece to move. Drag empty space to pan; scroll or pinch to zoom.';}
+function cancelIntent(){routeToken++;intent=null;$('cancel-target').hidden=true;canvas.classList.remove('targeting');$('hint').textContent='Tap a friendly piece to activate. Choose an action below the board; tap a destination or use the arrow buttons to move. Drag empty space to pan; scroll or pinch to zoom.';}
 function populateMenu(){
   const e=get(state,menuUnit);if(!e||!alive(e)){closeMenu();return;}
   $('context-name').textContent=label(e);
   $('context-detail').textContent=e.team===0?`${e.ap} AP · ${weaponNames[e.weapon]} · ammo ${e.ammo<0?'∞':e.ammo} · frag ${e.frag} / stun ${e.stun}${e.ow?' · OVERWATCH':''}${e.jam?' · JAM':''}`:`${e.ap} AP · ${e.team===2?'strength '+(e.strength<0?'hidden':e.strength):bugNames[e.bug]}`;
-  const old=$('unit-action').value, options=[];
+  const options=[];
   const add=(v,t)=>options.push(new Option(t,v));
   if(state.pending>=0){if(e.team===0&&e.ow){add('reaction:1','Fire reaction');add('reaction:0','Decline reaction');}}
   else if(e.id!==state.active){if(!e.done&&((state.phase===0&&e.team===0)||(state.phase===2&&e.team!==0)))add('activate','Activate piece');}
   else {
     if(e.team===0){if(e.ap>=2&&!e.jam&&e.weapon!==3)add('now:7','Overwatch · 2 AP');if(e.jam)add('now:8','Clear jam');}
     add('target:0','Move → square');
-    for(const [i,name] of ['North ↑','East →','South ↓','West ←'].entries())add('turn:'+i,'Face '+name);
+    if(e.team===0)for(const [i,name] of ['North ↑','East →','South ↓','West ←'].entries())add('turn:'+i,'Face '+name);
     if(e.team!==2){add('target:3',e.weapon===3&&e.team===0?'Flame → square':'Fire → enemy');add('target:4','Melee → enemy');}
     if(e.team===0){if(e.frag)add('target:5','Frag → square');if(e.stun)add('target:6','Stun → square');add('target:2','Open / close → door');add('target:13','Breach → door');add('target:9','Interact / inspect → square');add('frag','Take frag → supply / locker');add('target:14','Take ammo → supply');if(e.item>=0)add('target:11','Transfer item → Marine');for(const item of state.items.filter(i=>i.holder===-1&&i.dropped&&seen(i.r,i.c)))add('pickup:'+item.id,'Pick up '+item.name+' → square');}
     if(e.team===2)add('now:12','Reveal contact');
     add('end','End activation');
   }
-  $('unit-action').replaceChildren(...options);
-  if(options.some(o=>o.value===old))$('unit-action').value=old;
-  $('do-action').disabled=locked||!!state.outcome||!options.length;
+  const advanced=o=>o.value.startsWith('turn:')||['target:13','frag','target:14','target:11'].includes(o.value)||o.value.startsWith('pickup:');
+  const buttons=list=>list.map(o=>{const button=document.createElement('button');button.textContent=o.textContent;button.value=o.value;button.disabled=locked||!!state.outcome;button.onclick=()=>chooseAction(o.value,o.textContent);return button;});
+  $('unit-actions').replaceChildren(...buttons(options.filter(o=>!advanced(o))));
+  $('advanced-actions').replaceChildren(...buttons(options.filter(advanced)));
+  $('extra-actions').hidden=!options.some(advanced);
+  $('movement-pad').hidden=e.id!==state.active||state.pending>=0||!!e.ow||!e.ap;
+  for(const button of $('movement-pad').children)button.disabled=locked||!!state.outcome;
 }
 function openMenu(e){
   menuUnit=e.id;$('context').hidden=false;populateMenu();
-  const rect=canvas.getBoundingClientRect(),p=point(e.r,e.c),x=rect.left+p.x*rect.width/1024,y=rect.top+p.y*rect.height/1024;
-  $('context').style.left=Math.max(8,Math.min(innerWidth-300,x+cellSize/2))+'px';
-  $('context').style.top=Math.max(8,Math.min(innerHeight-260,y-cellSize/2))+'px';
+
 }
 function cellAt(x,y){const rect=canvas.getBoundingClientRect();return {r:Math.floor((y-rect.top)/rect.height*32)-OFFSET,c:Math.floor((x-rect.left)/rect.width*32)};}
 function occupant(p){return state.entities.find(e=>alive(e)&&e.r===p.r&&e.c===p.c);}
 function boardClick(p){
   if(!state||locked||p.r<0||p.r>=25||p.c<0||p.c>=31)return;
   const e=occupant(p);select(p.r,p.c,e?.id??-1);
-  if(intent){const chosen=intent;cancelIntent();perform(1,chosen.action,p.r,p.c,chosen.item??chosen.option??e?.id??-1);return;}
+  if(intent){const chosen=intent;cancelIntent();if(chosen.action===0){walkTo(p);return;}perform(1,chosen.action,p.r,p.c,chosen.item??chosen.option??e?.id??-1);const active=get(state,state.active);if(active)openMenu(active);return;}
   closeMenu();
   if(state.phase===1&&/^[A-F]$/.test(state.map[p.r][p.c])){perform(4,state.map[p.r][p.c].charCodeAt(0));return;}
   if(e){
@@ -130,7 +135,8 @@ function boardClick(p){
     openMenu(get(state,e.id));return;
   }
   const active=get(state,state.active);
-  if(active&&state.pending<0&&isFloor(state.map[p.r][p.c])&&Math.abs(active.r-p.r)+Math.abs(active.c-p.c)===1)perform(1,0,p.r,p.c);
+  if(active&&state.pending<0&&isFloor(state.map[p.r][p.c]))walkTo(p);
+  else if(active)openMenu(active);
 }
 function focusUnit(){const e=get(state,state.active)||state.entities.find(e=>alive(e)&&e.team===(state.phase===0?0:1))||state.entities.find(alive);if(!e)return;const p=point(e.r,e.c),box=canvas.parentElement;box.scrollLeft=p.x/32*cellSize-box.clientWidth/2;box.scrollTop=p.y/32*cellSize-box.clientHeight/2;select(e.r,e.c,e.id);}
 function zoomTo(size,x,y){const box=canvas.parentElement,rect=box.getBoundingClientRect(),px=x??rect.left+box.clientWidth/2,py=y??rect.top+box.clientHeight/2,ox=px-rect.left,oy=py-rect.top,old=cellSize;cellSize=Math.max(8,Math.min(128,size));canvas.style.width=canvas.style.height=cellSize*32+'px';box.scrollLeft=(box.scrollLeft+ox)*cellSize/old-ox;box.scrollTop=(box.scrollTop+oy)*cellSize/old-oy;$('zoom-level').textContent=Math.round(cellSize)+' px';closeMenu();}
@@ -216,15 +222,48 @@ async function start() {
   if(!engine.start(missionId,seed,variant.bug,variant.house))throw Error('Unable to create mission.');
   read();batch=[];doors=[];$('briefing').textContent=engine.objective(missionId);update();focusUnit();
 }
-$('do-action').onclick=()=>{
-  const value=$('unit-action').value,[kind,arg]=value.split(':'),e=get(state,menuUnit);if(!e||locked)return;
+function chooseAction(value,text){
+  const [kind,arg]=value.split(':'),e=get(state,menuUnit);if(!e||locked)return;
   closeMenu();cancelIntent();
   if(kind==='activate')perform(0,e.id);
   else if(kind==='end')perform(2);
   else if(kind==='reaction')perform(6,e.id,Number(arg));
   else if(kind==='turn')perform(1,1,0,0,Number(arg));
   else if(kind==='now')perform(1,Number(arg),e.r,e.c);
-  else {intent={action:kind==='pickup'?10:kind==='frag'?9:Number(arg)};if(kind==='pickup')intent.item=Number(arg);if(kind==='frag')intent.option=1;if(intent.action===14)intent.option=0;canvas.classList.add('targeting');$('hint').textContent=`${label(e)}: ${value==='frag'?'take frag':$('unit-action').selectedOptions[0]?.textContent||'choose action'} — click the target on the map. Escape cancels.`;}
+  else {intent={action:kind==='pickup'?10:kind==='frag'?9:Number(arg)};if(kind==='pickup')intent.item=Number(arg);if(kind==='frag')intent.option=1;if(intent.action===14)intent.option=0;canvas.classList.add('targeting');canvas.scrollIntoView({block:'center',behavior:'smooth'});$('cancel-target').hidden=false;$('hint').textContent=`${label(e)}: ${text} — tap the target on the map, or Cancel target selection.`;}
+  if(!intent&&state.active>=0)openMenu(get(state,state.active));
+}
+// Routes only use cells exposed by the current snapshot. Each step goes through the C API.
+function movementPath(unit,destination){
+  const queue=[{r:unit.r,c:unit.c,path:[]}],visited=new Set([unit.r+','+unit.c]);
+  for(let i=0;i<queue.length;i++){
+    const node=queue[i];if(node.r===destination.r&&node.c===destination.c)return node.path;
+    for(const [dr,dc] of [[-1,0],[0,1],[1,0],[0,-1]]){
+      const r=node.r+dr,c=node.c+dc,key=r+','+c;
+      if(r<0||r>=25||c<0||c>=31||visited.has(key)||!floor(r,c)||occupant({r,c}))continue;
+      visited.add(key);queue.push({r,c,path:[...node.path,{r,c}]});
+    }
+  }
+  return null;
+}
+async function walkTo(destination){
+  const unit=get(state,state.active);if(!unit||locked||state.pending>=0)return;
+  const path=movementPath(unit,destination);
+  if(!path){$('hint').textContent='No clear route. Open doors or move blocking pieces first.';openMenu(unit);return;}
+  const token=++routeToken,id=unit.id;
+  for(const step of path){
+    const current=get(state,id);if(token!==routeToken||state.active!==id||state.pending>=0||state.outcome||!current?.ap)break;
+    if(!perform(1,0,step.r,step.c))break;
+    if(state.pending>=0)break;
+    if(locked)await new Promise(resolve=>setTimeout(resolve,280));
+  }
+  if(token===routeToken&&state.active===id){openMenu(get(state,id));$('hint').textContent='Movement finished. Choose another destination or a Marine action below the board.';}
+}
+$('cancel-target').onclick=()=>{cancelIntent();const unit=get(state,state.active);if(unit)openMenu(unit);};
+for(const button of $('movement-pad').children)button.onclick=()=>{
+  const unit=get(state,state.active);if(!unit||locked)return;cancelIntent();
+  const [dr,dc]=button.dataset.step.split(',').map(Number);const destination={r:unit.r+dr,c:unit.c+dc};
+  select(destination.r,destination.c);perform(1,0,destination.r,destination.c);openMenu(get(state,unit.id));
 };
 $('close-menu').onclick=closeMenu;
 $('phase').onclick=()=>{cancelIntent();closeMenu();perform(state.pending>=0?7:state.phase===1?5:3);};
@@ -249,7 +288,7 @@ canvas.addEventListener('pointermove',e=>{
 canvas.addEventListener('pointerup',e=>{
   pointers.delete(e.pointerId);if(pinch){if(pointers.size===0)pinch=null;gesture=null;return;}
   const g=gesture;gesture=null;if(!g)return;const p=cellAt(e.clientX,e.clientY);
-  if(!g.moved)boardClick(p);else if(g.drag&&!locked){const active=get(state,state.active);if(active&&Math.abs(active.r-p.r)+Math.abs(active.c-p.c)===1)boardClick(p);else $('hint').textContent='Drag to an adjacent square. Each move spends AP; choose the next step on the board.';}
+  if(!g.moved)boardClick(p);else if(g.drag&&!locked)boardClick(p);
 });
 canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);gesture=null;pinch=null;});
 canvas.addEventListener('keydown',e=>{
@@ -259,7 +298,7 @@ canvas.addEventListener('keydown',e=>{
   else if(e.key.toLowerCase()==='m'){const unit=occupant(selected)||get(state,state.active);if(unit)openMenu(unit);}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();cancelIntent();}});
-canvas.parentElement.addEventListener('scroll',closeMenu);
+// The action panel remains available while the map pans or scrolls.
 $('motion').onchange=()=>{effects=[];motions.clear();doors=[];};
 $('save-log').onclick=()=>{const blob=new Blob([`Simple Hulk / mission ${missionId} / seed ${gameSeed}\n`+history.join('\n')+'\n'],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='simple-hulk-game.log';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('new').onclick=()=>start().catch(e=>log(e.message,true));

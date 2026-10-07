@@ -84,3 +84,7 @@ classification and neighbor masks; tests exercise all sixteen combinations.
 
 Build references: [Clang freestanding builds](https://clang.llvm.org/docs/UsersManual.html#freestanding-builds)
 and [LLVM WebAssembly linker](https://lld.llvm.org/WebAssembly.html).
+
+## Touch controls
+
+Select a Marine with the named roster buttons or its map icon. Common actions use large buttons below the board; facing and equipment are expandable. Tap or drag to a floor destination for a route through currently exposed, unoccupied floor. Each step uses the engine and spends AP; doors need a separate action and pending reactions stop the route. Direction buttons provide precise single-square movement. Cancel target selection returns to the action panel. Infected crew is currently a tabletop option in FLUFF, not an engine variant.

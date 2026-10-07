@@ -155,6 +155,65 @@ A finished blip remains finished. Apply stun normally.
 
 <!-- pagebreak -->
 
+## Optional rule: infected crew
+
+**Infected crew concept contributed by Alex 'Nergling'.** These former crew
+members replace the bugs for an entire mission. This is a tabletop variant;
+the web game does not yet implement infected movement or hearing.
+
+Each infected has **3 AP, 1 wound, and melee +0**. It has no facing, ranged
+attack, or grenades. Movement, doors, melee, blip placement, stun, and Marine
+overwatch use the core rules. Infected blips also have 3 AP; revealed crew inherit
+remaining blip AP normally. Use the same mission objectives and deadline.
+
+### Poor sight, keen hearing
+
+An infected detects a Marine within **3 squares** by Manhattan distance if the
+core sight line is clear. Every ranged attack, grenade explosion, or door action
+also creates a noise marker on the acting model's square, including a jammed
+shot or an overwatch reaction. Noise is heard within **8 squares** by Manhattan
+distance, ignoring walls and closed doors. Quiet movement and console use make
+no noise. Keep noise markers until the end of the next alien phase; a fresh noise
+at the same square refreshes its expiry.
+
+At the start of each infected or infected-blip activation, choose the nearest
+detected Marine; otherwise choose the nearest audible noise marker. Break ties
+by the infected player's choice. That square is its goal for the activation.
+Use the shortest orthogonal route through floor and operable doors, excluding
+occupied squares; stop adjacent if the goal square is occupied. If adjacent to a detected Marine, attack it. Otherwise spend
+AP moving along that route or opening its next door. Recalculate after each
+action: if blocked, stop; never pass through models or walls. Noise locates a
+square, not a Marine through a wall. Blips still reveal immediately when seen
+by Marines, and must reveal before attacking.
+
+With no detected Marine or audible noise, roll one d6 for the activation:
+1 north, 2 east, 3 south, 4 west, 5-6 remain still. Spend at most **1 AP** moving
+in that direction, or opening the adjacent door there. If blocked, remain still.
+The remaining AP expire. A stationary crew member causes no overwatch reaction.
+
+### Crowded passages
+
+First trial: keep the mission's existing blip pool and arrival schedule. For a
+larger infestation, prepare **six strength-2 and six strength-3 blips** (30 crew),
+or **eight strength-2 and eight strength-3 blips** (40 crew). Shuffle their
+identities. Keep the mission's starting blip count and entry/arrival cap, then
+continue arrivals each alien phase until the pool is exhausted or the mission's
+last permitted arrival phase ends. Discard any remaining queue at that cutoff.
+Normal placement still loses excess crew when adjacent squares are full.
+
+These larger pools are untested difficulty options, not a requirement to kill
+every crew member. Congested corridors are part of the threat: hold a junction,
+advance a Marine under another's overwatch, then establish a new firing position
+before moving the rear guard. Record completion round and Marine casualties
+before changing the pool or deadline for a rematch.
+
+**Example:** A rifle fires at (10,12). An infected at (10,18) hears the noise
+six squares away, even through a closed door. On its activation it heads along
+the passage, spending 1 AP per move or door action. When it opens a door into an
+overwatching Marine's sight, resolve the normal reaction before it continues.
+
+<!-- pagebreak -->
+
 ## House rules and construction kit
 
 These are optional, not part of the starting mission. Rematch with switched teams
