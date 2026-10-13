@@ -281,8 +281,28 @@ static void test_field_of_view(void) {
     CHECK(sh_view_tile(g,0,0,SH_MARINE)=='-');CHECK(!sh_marine_visible(g,-1,0));
     sh_destroy(g);
 }
+static void test_overwatch_availability(void) {
+    int mission;SHGame *g;
+    for(mission=0;mission<SH_SCENARIOS;mission++) {
+        g=fixture(mission);
+        CHECK(sh_can_overwatch(g,0,0));
+        g->entity[0].ap=1;CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].ap=2;CHECK(sh_can_overwatch(g,0,0));
+        g->entity[0].jammed=1;CHECK(!sh_can_overwatch(g,0,0));CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].ap=3;CHECK(sh_can_overwatch(g,0,1));
+        g->entity[0].jammed=0;g->entity[0].stunned=1;CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].stunned=0;g->entity[0].ammunition=0;CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].ammunition=-1;g->entity[0].weapon=SH_FLAME;CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].weapon=SH_RIFLE;g->entity[0].done=1;CHECK(!sh_can_overwatch(g,0,1));
+        g->entity[0].done=0;g->status.active=1;CHECK(!sh_can_overwatch(g,0,1));
+        g->status.active=0;g->entity[0].ap=2;CHECK(sh_can_overwatch(g,0,0));
+        CHECK(sh_action(g,act(SH_OVERWATCH,0,0,-1,0))==SH_OK);
+        CHECK(g->entity[0].overwatch&&!sh_can_overwatch(g,0,1));
+        sh_destroy(g);
+    }
+}
 int smoke_tests(void) {
-    checks=failures=0;test_field_of_view();test_hull();test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
+    checks=failures=0;test_overwatch_availability();test_field_of_view();test_hull();test_setup();test_movement_sight();test_overwatch();test_weapons_blips();test_items_deployment();test_objectives();test_optional();test_reveal_choices();test_ghost_and_quarry();
     printf("Smoke tests: %d checks, %d failures (actions, sight, overwatch, items, arrivals, all mission objectives).\n",checks,failures);
     return failures;
 }

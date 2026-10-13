@@ -49,7 +49,7 @@ EXPORT("snapshot") const char *snapshot(int viewer) {
     for(r=0;r<SH_ROWS;r++) {json[n++]='"';for(c=0;c<SH_COLS;c++)json[n++]=viewer!=SH_MARINE||sh_marine_visible(game,r,c)?'1':'0';json[n++]='"';if(r<SH_ROWS-1)json[n++]=',';}
     n+=snprintf(json+n,sizeof json-(size_t)n,"],\"viewer\":%d,\"entities\":[",viewer);
     for(i=0;i<s.entities;i++) {sh_observed_entity(game,i,(SHTeam)viewer,&e);
-        n+=snprintf(json+n,sizeof json-(size_t)n,"%s{\"id\":%d,\"alive\":%d,\"extracted\":%d,\"r\":%d,\"c\":%d,\"ap\":%d,\"wounds\":%d,\"done\":%d,\"team\":%d,\"facing\":%d,\"weapon\":%d,\"bug\":%d,\"ammo\":%d,\"frag\":%d,\"stun\":%d,\"ow\":%d,\"jam\":%d,\"stunned\":%d,\"strength\":%d,\"item\":%d}",i?",":"",e.id,e.alive,e.extracted,e.row,e.col,e.ap,e.wounds,e.done,e.team,e.facing,e.weapon,e.bug,e.ammunition,e.frag,e.stun,e.overwatch,e.jammed,e.stunned,e.strength,e.item);
+        n+=snprintf(json+n,sizeof json-(size_t)n,"%s{\"id\":%d,\"alive\":%d,\"extracted\":%d,\"r\":%d,\"c\":%d,\"ap\":%d,\"wounds\":%d,\"done\":%d,\"team\":%d,\"facing\":%d,\"weapon\":%d,\"bug\":%d,\"ammo\":%d,\"frag\":%d,\"stun\":%d,\"ow\":%d,\"jam\":%d,\"stunned\":%d,\"strength\":%d,\"item\":%d,\"canOverwatch\":%d}",i?",":"",e.id,e.alive,e.extracted,e.row,e.col,e.ap,e.wounds,e.done,e.team,e.facing,e.weapon,e.bug,e.ammunition,e.frag,e.stun,e.overwatch,e.jammed,e.stunned,e.strength,e.item,sh_can_overwatch(game,i,1));
     }
     n+=snprintf(json+n,sizeof json-(size_t)n,"],\"items\":[");
     for(i=0;sh_item(game,i,&item);i++)n+=snprintf(json+n,sizeof json-(size_t)n,"%s{\"id\":%d,\"holder\":%d,\"r\":%d,\"c\":%d,\"dropped\":%d,\"name\":\"%s\"}",i?",":"",item.id,item.holder,item.row,item.col,item.dropped,item.name);

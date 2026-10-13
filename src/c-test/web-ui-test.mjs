@@ -23,7 +23,7 @@ vm.createContext(sandbox);vm.runInContext(source+`\nglobalThis.ui={boardClick,op
 const marine={id:0,team:0,alive:1,extracted:0,r:10,c:10,ap:4,weapon:0,frag:1,stun:1,ammo:-1,item:-1,done:0,facing:0};
 let state={phase:0,active:-1,pending:-1,outcome:0,round:1,deadline:12,objectives:0,evacuated:0,items:[],entities:[marine],map:Array.from({length:25},()=>'.'.repeat(31))};
 const calls=[];
-const engine={canShoot:()=>true,layout:()=>state.map,snapshot:()=>state,error:()=>'',command(...args){calls.push(args);if(args[0]===0)state.active=args[1];if(args[0]===1&&args[1]===0){marine.r=args[2];marine.c=args[3];marine.ap--;}if(args[0]===1&&args[1]===2){const row=state.map[args[2]].split('');row[args[3]]='/';state.map[args[2]]=row.join('');marine.ap--;}if(args[0]===1&&args[1]===7){marine.ow=1;marine.ap=0;state.active=-1;}if(args[0]===2)state.active=-1;return 0;}};
+const engine={canShoot:()=>true,layout:()=>state.map,snapshot:()=>{marine.canOverwatch=state.phase===0&&state.pending<0&&(state.active<0||state.active===marine.id)&&!marine.done&&!marine.ow&&marine.weapon!==3&&marine.ap>=(marine.jam?3:2);return state;},error:()=>'',command(...args){calls.push(args);if(args[0]===0)state.active=args[1];if(args[0]===1&&args[1]===0){marine.r=args[2];marine.c=args[3];marine.ap--;}if(args[0]===1&&args[1]===2){const row=state.map[args[2]].split('');row[args[3]]='/';state.map[args[2]]=row.join('');marine.ap--;}if(args[0]===1&&args[1]===7){marine.ow=1;marine.ap=0;state.active=-1;}if(args[0]===2)state.active=-1;return 0;}};
 sandbox.ui.set(state,engine);
 sandbox.ui.boardClick({r:10,c:10});assert.deepEqual(calls.pop(),[0,0]);
 assert.ok(el('unit-actions').children.some(o=>o.value==='ready'));

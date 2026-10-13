@@ -87,7 +87,7 @@ function update() {
   $('autopilot').disabled=!!state.outcome;
   if(state.outcome&&autopilot){autopilot=false;clearTimeout(autoTimer);$('autopilot').textContent='Autopilot finished';$('autopilot').setAttribute('aria-pressed','false');}
   const selectedMarine=get(state,state.active)||occupant(selected);
-  $('overwatch').disabled=locked||autopilot||state.phase!==0||!selectedMarine||selectedMarine.team!==0||!!selectedMarine.done||selectedMarine.weapon===3||selectedMarine.ammo===0||!!selectedMarine.stunned||selectedMarine.ap<(selectedMarine.jam?3:2);
+  $('overwatch').disabled=locked||autopilot||!selectedMarine?.canOverwatch;
   $('phase').disabled=locked||autopilot||!!state.outcome;
   for(const button of $('unit-actions').children)button.disabled=locked||!!state.outcome;
   $('unit-picker').replaceChildren(...state.entities.filter(e=>alive(e)&&((state.phase===0||state.pending>=0)?e.team===0:e.team!==0)).map(e=>{const button=document.createElement('button');button.textContent=`${label(e)} · ${e.ap} AP${e.done?' · done':''}`;button.disabled=locked||!!state.outcome;button.onclick=()=>{boardClick({r:e.r,c:e.c});const p=point(e.r,e.c),box=canvas.parentElement;box.scrollLeft=p.x/32*cellSize-box.clientWidth/2;box.scrollTop=p.y/32*cellSize-box.clientHeight/2;};return button;}));
@@ -112,7 +112,7 @@ function populateMenu(){
   else if(e.id!==state.active){if(!e.done&&((state.phase===0&&e.team===0)||(state.phase===2&&e.team!==0)))add('activate','Activate piece');}
   else if(e.ap<=0)add('end','End activation');
   else {
-    if(e.team===0){if(e.ap>=(e.jam?3:2)&&e.ammo!==0&&!e.stunned&&e.weapon!==3)add('ready','Overwatch · 2 AP');if(e.jam)add('now:8','Clear jam');}
+    if(e.team===0){if(e.canOverwatch)add('ready','Overwatch · 2 AP');if(e.jam)add('now:8','Clear jam');}
     add('target:0','Move → square');
     if(e.team===0)for(const [i,name] of ['North ↑','East →','South ↓','West ←'].entries())add('turn:'+i,'Face '+name);
     if(e.team!==2){add('target:3',e.weapon===3&&e.team===0?'Flame → square':'Fire → enemy');add('target:4','Melee → enemy');}
@@ -197,12 +197,13 @@ function render(now) {
         const pose=Math.floor(progress*4)%2===0?'left':'right';name=e.team===0?'crew-'+weaponNames[e.weapon]+'-'+pose:e.team===1?'bug-'+bugNames[e.bug]+'-'+pose:'blip';
       }
       if(e.ow)sprite('overwatch',p.x,p.y,angle,1.04,.85);
-      sprite(name,p.x,p.y,angle,e.team===2?.7:1);
+      if(e.team===2){ctx.fillStyle='rgba(255,255,255,.16)';ctx.beginPath();ctx.arc(p.x,p.y,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();}
+      sprite(name,p.x,p.y,e.team===2?0:angle,e.team===2?1.15:1);
       if(e.jam)sprite('jam',p.x+8,p.y+8,0,.38);
       if(e.stunned)sprite('stunned',p.x,p.y,0,1,.65);
       if(e.item>=0)sprite(manifest.items[state.items.find(i=>i.id===e.item)?.name]||'recorder',p.x+10,p.y-8,0,.35);
       if(e.id===state.active||(state.pending>=0&&e.team===0&&e.ow)) {ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(p.x-15,p.y-15,30,30);}
-      ctx.fillStyle='#111';ctx.fillRect(p.x-15,p.y+7,13,10);ctx.fillStyle='#fff';ctx.font='bold 8px monospace';ctx.fillText(e.id,p.x-14,p.y+15);
+      if(e.team!==2){ctx.fillStyle='#111';ctx.fillRect(p.x-15,p.y+7,13,10);ctx.fillStyle='#fff';ctx.font='bold 8px monospace';ctx.fillText(e.id,p.x-14,p.y+15);}
       if(e.team===0) {ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(-3,-11);ctx.lineTo(3,-11);ctx.fill();ctx.restore();}
     }
     effects=effects.filter(e=>now<e.start+e.life);

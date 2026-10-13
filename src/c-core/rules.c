@@ -133,6 +133,16 @@ int sh_observed_entity(const SHGame *g,int id,SHTeam viewer,SHEntity *out) {
     return 1;
 }
 static int weapon_range(SHWeapon w) { return w==SH_RIFLE?8:w==SH_SCATTERGUN?4:w==SH_CANNON?10:4; }
+int sh_can_overwatch(const SHGame *g,int id,int clear_jam) {
+    const SHEntity *e;
+    if(!g||!entity_ok(g,id)||g->status.outcome!=SH_ONGOING||
+       g->status.phase!=SH_MARINE_PHASE||g->status.pending_target>=0||
+       (g->status.active>=0&&g->status.active!=id))return 0;
+    e=&g->entity[id];
+    return e->team==SH_MARINE&&e->alive&&!e->extracted&&!e->done&&
+           !e->overwatch&&!e->stunned&&e->weapon!=SH_FLAME&&e->ammunition!=0&&
+           (!e->jammed||clear_jam)&&e->ap>=2+(e->jammed?1:0);
+}
 int sh_can_shoot(const SHGame *g,int from,int target) {
     const SHEntity *e,*t;
     if(!entity_ok(g,from)||!entity_ok(g,target)) return 0;

@@ -130,6 +130,9 @@ int sh_marine_visible(const SHGame *game, int row, int col);
 char sh_view_tile(const SHGame *game, int row, int col, SHTeam viewer);
 int sh_observed_entity(const SHGame *game, int id, SHTeam viewer, SHEntity *out);
 int sh_can_shoot(const SHGame *game, int marine, int target);
+/* Available this Marine phase, active or ready to activate. With clear_jam=1,
+   include the extra AP needed to clear a jam before entering overwatch. */
+int sh_can_overwatch(const SHGame *game, int marine, int clear_jam);
 SHResult sh_activate(SHGame *game, int entity);
 SHResult sh_action(SHGame *game, SHAction action);
 SHResult sh_end_activation(SHGame *game);

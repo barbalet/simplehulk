@@ -44,15 +44,16 @@ for(let mission=0;mission<9;mission++) {
  check(initial.map.some(row=>row.includes('?')),'Unseen interiors concealed');
  check(snapshot(1).map.every(row=>!row.includes('?')),'Alien private chart complete');
  check(initial.entities.filter(e=>e.team===0).length===5,'Five Marines');
+ check(initial.entities.filter(e=>e.team===0&&e.weapon!==3).every(e=>e.canOverwatch===1),'Core advertises ready overwatch in every mission');
  check(initial.entities.filter(e=>e.team===2).every(e=>e.strength===-1),'Marine view hides contact strengths');
  check(snapshot(1).entities.filter(e=>e.team===2).every(e=>e.strength>0),'Alien view exposes contact strengths');
  check(command(trace,0,0)===0,'Activate');const m=snapshot().entities[0];
  check(command(trace,1,0,m.r+1,m.c,-1)===4,'Hull wall blocks movement');
  check(command(trace,1,2,m.r+1,m.c,-1)===1,'Hull wall is not an operable door');
  check(snapshot().entities[0].ap===4,'Rejected hull actions spend no AP');
- check(command(trace,1,0,m.r-1,m.c,-1)===0,'Move north');check(snapshot().entities[0].ap===3,'Movement costs AP');
+ check(command(trace,1,0,m.r-1,m.c,-1)===0,'Move north');check(snapshot().entities[0].ap===3,'Movement costs AP');check(snapshot().entities[0].canOverwatch===1,'Overwatch remains available at 3 AP');
  check(command(trace,1,0,0,0,-1)!==0,'Reject teleport');
- check(command(trace,1,7,0,0,-1)===0,'Overwatch');check(snapshot().entities[0].ow===1&&snapshot().active===-1,'Overwatch ends activation');
+ check(command(trace,1,7,0,0,-1)===0,'Overwatch');check(snapshot().entities[0].ow===1&&snapshot().active===-1,'Overwatch ends activation');check(snapshot().entities[0].canOverwatch===0,'Overwatch button becomes unavailable after use');
  // Exercise shots, grenades, facing, and interactions while respecting public API rejection.
  for(let id=1;id<5;id++) {
   command(trace,0,id);let e=snapshot().entities[id];

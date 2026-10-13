@@ -29,15 +29,15 @@ static void units(const SHGame *game, SHTeam viewer) {
     SHEntity e;
     int i;
     for (i = 0; i < status.entities; i++) {
-        sh_entity(game, i, viewer, &e);
+        sh_observed_entity(game, i, viewer, &e);
         if (!e.alive || e.extracted) continue;
         printf("%2d %-6s (%2d,%2d) AP=%d wounds=%d", i,
                e.team == SH_MARINE ? "Marine" : e.team == SH_BLIP ? "blip" : "alien",
                e.row + 1, e.col + 1, e.ap, e.wounds);
         if (e.team == SH_MARINE)
-            printf(" %s facing=%d ammo=%d overwatch=%d jam=%d item=%d",
+            printf(" %s facing=%d ammo=%d overwatch=%d jam=%d item=%d can-overwatch=%d",
                    sh_weapon_name(e.weapon), e.facing, e.ammunition,
-                   e.overwatch, e.jammed, e.item);
+                   e.overwatch, e.jammed, e.item, sh_can_overwatch(game,i,1));
         if (e.team == SH_BLIP)
             printf(" strength=%d (-1 means hidden)", e.strength);
         putchar('\n');

@@ -166,3 +166,5 @@ as anonymous blips, while `sh_entity` retains the authoritative rules identity.
 Observation never resets wounds, turns, AP or a previously revealed bug.
 `sh_board` now prints the Marine observation. Alien-view API consumers can request
 the complete chart and entity information explicitly.
+
+`sh_observed_entity` supplies anonymous sensor blips for hostiles outside current Marine sight; use it for public displays instead of raw roster access. `sh_can_overwatch(game, marine, clear_jam)` reports whether that Marine can enter overwatch now; passing 1 includes the AP needed to clear a jam first. These presentation and availability rules apply to every scenario.
