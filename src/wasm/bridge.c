@@ -32,6 +32,15 @@ EXPORT("command") int command(int op,int a,int b,int c,int d) {
     }
 }
 EXPORT("error") const char *error(void) {return sh_last_error(game);}
+EXPORT("can_shoot") int can_shoot(int from,int target) {return game && sh_can_shoot(game,from,target);}
+/* Public mission chart for route planning, without entities or contact strengths. */
+EXPORT("layout") const char *layout(void) {
+    int r,c,n=0;
+    if(!game)return "[]";
+    json[n++]='[';
+    for(r=0;r<SH_ROWS;r++) {json[n++]='"';for(c=0;c<SH_COLS;c++)json[n++]=sh_tile(game,r,c);json[n++]='"';if(r<SH_ROWS-1)json[n++]=',';}
+    json[n++]=']';json[n]=0;return json;
+}
 EXPORT("snapshot") const char *snapshot(int viewer) {
     SHStatus s=sh_status(game);SHEntity e;SHItem item;int i,r,c,n=0;
     n+=snprintf(json+n,sizeof json-(size_t)n,"{\"round\":%d,\"active\":%d,\"phase\":%d,\"outcome\":%d,\"pending\":%d,\"deadline\":%d,\"objectives\":%d,\"evacuated\":%d,\"signal\":%d,\"map\":[",s.round,s.active,s.phase,s.outcome,s.pending_target,s.deadline,(int)s.objectives,s.evacuated,s.signal_remaining);

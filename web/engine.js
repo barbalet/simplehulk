@@ -19,6 +19,8 @@ export async function loadEngine(url, onFeedback = () => {}) {
     command: (op, a = 0, b = 0, c = 0, d = -1) => instance.exports.command(op, a, b, c, d),
     snapshot: viewer => JSON.parse(text(instance.exports.snapshot(viewer))),
     error: () => text(instance.exports.error()),
+    canShoot: (from, target) => !!instance.exports.can_shoot(from, target),
+    layout: () => JSON.parse(text(instance.exports.layout())),
     name: id => text(instance.exports.mission_name(id)),
     objective: id => text(instance.exports.mission_objective(id))
   };

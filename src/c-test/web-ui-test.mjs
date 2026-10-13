@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import * as tiles from '../../web/tiles.js';
+import {route,autoCommands,reactionCommands} from '../../web/autopilot.js';
 class Element {
   constructor(){this.value='';this.children=[];this.style={};this.hidden=true;this.handlers={};this.clientWidth=800;this.clientHeight=600;this.scrollLeft=0;this.scrollTop=0;this.classList={add(){},remove(){}};}
   append(...nodes){this.children.push(...nodes);}
@@ -12,21 +13,21 @@ class Element {
   get firstElementChild(){return {remove(){}};}
   addEventListener(name,fn){this.handlers[name]=fn;}
   getBoundingClientRect(){return {left:0,top:0,width:2048,height:2048};}
-  setPointerCapture(){} scrollIntoView(){} focus(){} getContext(){return {};}
+  setAttribute(){} setPointerCapture(){} scrollIntoView(){} focus(){} getContext(){return {};}
 }
 const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
 el('map').parentElement=new Element();el('viewer').value='auto';el('motion').checked=false;
-const sandbox={console,...tiles,document:{getElementById:el,createElement:()=>new Element(),addEventListener(){}},matchMedia:()=>({matches:true}),performance:{now:()=>100},setTimeout(){},innerWidth:1000,innerHeight:800,Option:class{constructor(text,value){this.textContent=text;this.value=String(value);}}};
+const sandbox={console,...tiles,route,autoCommands,reactionCommands,clearTimeout(){},document:{getElementById:el,createElement:()=>new Element(),addEventListener(){}},matchMedia:()=>({matches:true}),performance:{now:()=>100},setTimeout(){},innerWidth:1000,innerHeight:800,Option:class{constructor(text,value){this.textContent=text;this.value=String(value);}}};
 const source=readFileSync(new URL('../../web/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').split('try {\n  manifest=')[0];
-vm.createContext(sandbox);vm.runInContext(source+`\nglobalThis.ui={boardClick,openMenu,zoomTo,focusUnit,select,movementPath,walkTo,set(s,e){state=s;engine=e;},getState(){return state;}};`,sandbox);
+vm.createContext(sandbox);vm.runInContext(source+`\nglobalThis.ui={boardClick,openMenu,zoomTo,focusUnit,select,movementPath,walkTo,autoTick,setAutopilot,set(s,e){state=s;engine=e;},getState(){return state;}};`,sandbox);
 const marine={id:0,team:0,alive:1,extracted:0,r:10,c:10,ap:4,weapon:0,frag:1,stun:1,ammo:-1,item:-1,done:0,facing:0};
 let state={phase:0,active:-1,pending:-1,outcome:0,round:1,deadline:12,objectives:0,evacuated:0,items:[],entities:[marine],map:Array.from({length:25},()=>'.'.repeat(31))};
 const calls=[];
-const engine={snapshot:()=>state,error:()=>'',command(...args){calls.push(args);if(args[0]===0)state.active=args[1];if(args[0]===1&&args[1]===0){marine.r=args[2];marine.c=args[3];marine.ap--;}if(args[0]===2)state.active=-1;return 0;}};
+const engine={canShoot:()=>true,layout:()=>state.map,snapshot:()=>state,error:()=>'',command(...args){calls.push(args);if(args[0]===0)state.active=args[1];if(args[0]===1&&args[1]===0){marine.r=args[2];marine.c=args[3];marine.ap--;}if(args[0]===1&&args[1]===2){const row=state.map[args[2]].split('');row[args[3]]='/';state.map[args[2]]=row.join('');marine.ap--;}if(args[0]===1&&args[1]===7){marine.ow=1;marine.ap=0;state.active=-1;}if(args[0]===2)state.active=-1;return 0;}};
 sandbox.ui.set(state,engine);
 sandbox.ui.boardClick({r:10,c:10});assert.deepEqual(calls.pop(),[0,0]);
-assert.ok(el('unit-actions').children.some(o=>o.value==='now:7'));
-el('unit-actions').children.find(o=>o.value==='now:7').onclick();assert.equal(calls.pop()[1],7);
+assert.ok(el('unit-actions').children.some(o=>o.value==='ready'));
+el('unit-actions').children.find(o=>o.value==='ready').onclick();assert.equal(calls.pop()[1],7);marine.ap=4;marine.ow=0;state.active=0;
 sandbox.ui.boardClick({r:10,c:11});assert.deepEqual(calls.pop(),[1,0,10,11]);assert.equal(marine.ap,3);
 sandbox.ui.openMenu(marine);el('unit-actions').children.find(o=>o.value==='target:5').onclick();sandbox.ui.boardClick({r:8,c:11});assert.deepEqual(calls.pop(),[1,5,8,11,-1]);
 const enemy={...marine,id:5,team:1,r:10,c:12};state.entities.push(enemy);
@@ -49,6 +50,8 @@ state.items=[];state.phase=0;state.active=0;marine.ow=0;marine.ap=4;marine.r=15;
 await sandbox.ui.walkTo({r:15,c:13});assert.equal(marine.c,13);assert.equal(marine.ap,1);
 marine.ap=2;await sandbox.ui.walkTo({r:15,c:18});assert.equal(marine.c,15);assert.equal(marine.ap,0);
 marine.ap=4;state.map[15]='.'.repeat(16)+'='+'.'.repeat(14);
-const route=sandbox.ui.movementPath(marine,{r:15,c:17});assert.ok(route.every(p=>!(p.r===15&&p.c===16)));
+const path=sandbox.ui.movementPath(marine,{r:15,c:17});assert.ok(path.some(p=>p.r===15&&p.c===16));
+await sandbox.ui.walkTo({r:15,c:17});assert.equal(state.map[15][16],'/');assert.equal(marine.c,17);assert.equal(marine.ap,1);
 state.pending=5;const before=calls.length;await sandbox.ui.walkTo({r:14,c:15});assert.equal(calls.length,before);
+state.pending=-1;marine.ap=4;state.active=0;sandbox.ui.setAutopilot(true);assert.equal(el('autopilot').textContent,'Pause autopilot');sandbox.ui.setAutopilot(false);const paused=calls.length;sandbox.ui.autoTick();assert.equal(calls.length,paused);
 console.log('PASS: board activation, movement, targeted grenades/weapons, overwatch reactions, deployment, keyboard cursor and zoom.');

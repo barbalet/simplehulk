@@ -45,5 +45,6 @@ $(BUILD)/wasm-parity: src/c-test/wasm-parity.c src/wasm/bridge.c $(BUILD)/libsim
 wasm-test: wasm $(BUILD)/wasm-parity maps-check
 	node src/c-test/wasm-test.mjs
 	node src/c-test/web-ui-test.mjs
+	node src/c-test/autopilot-test.mjs
 serve:
 	python3 -m http.server 8000

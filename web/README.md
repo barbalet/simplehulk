@@ -2,7 +2,9 @@
 
 The browser runs the existing C rules and all nine scenarios through WebAssembly.
 It provides local two-player hotseat play, manual alien activations, deployment,
-and explicit overwatch responses. No automatic opponent or network play is included.
+and automatic overwatch responses (manual responses remain an option). A toggleable
+autopilot plays both teams from the current position; it pauses without resetting
+the game. Network play is not included.
 
 From the repository root:
 
@@ -29,14 +31,14 @@ all nine missions and preserves every optional bug / house-rule combination.
 Seed, animation and private-view overrides live in Preferences. Marine view is the default; switch to the private Alien view only after
 passing the device. Current team view is an optional phase-following preference.
 
-Click a friendly piece to activate it, then click it again for its contextual
-action dropdown. Choose overwatch, turning, attacks, grenades, doors, mission
-interactions or equipment there. Targeted actions prompt for a map square or
-piece; Escape cancels. Dropped items appear by name in the pickup choices.
-End activation is in the same menu; End phase is above the board. During
-reinforcement deployment click entry letters on the map. During a reaction
-window click an overwatching Marine to fire or decline, then Resume alien
-attack. The engine rejects illegal actions without spending resources.
+Select a friendly piece using its roster button or map icon. Tap a passage or
+closed door to move; doors open automatically for their normal AP cost. Tap a
+visible enemy to aim and attack. Overwatch is a prominent button above the board.
+Grenades, mission interactions and equipment remain in the large action buttons;
+Escape or Cancel target selection cancels targeting. Reinforcement deployment
+uses entry letters on the map. Overwatch reactions fire automatically by default;
+Preferences can restore manual Fire / Decline decisions. The engine rejects
+illegal actions without spending resources.
 
 Adjacent empty floor squares are outlined for the active model. Click one or
 drag the active piece one cell to move. Dragging previews the destination; it
@@ -87,4 +89,12 @@ and [LLVM WebAssembly linker](https://lld.llvm.org/WebAssembly.html).
 
 ## Touch controls
 
-Select a Marine with the named roster buttons or its map icon. Common actions use large buttons below the board; facing and equipment are expandable. Tap or drag to a floor destination for a route through currently exposed, unoccupied floor. Each step uses the engine and spends AP; doors need a separate action and pending reactions stop the route. Direction buttons provide precise single-square movement. Cancel target selection returns to the action panel. Infected crew is currently a tabletop option in FLUFF, not an engine variant.
+Select a Marine with the named roster buttons or its map icon. Common actions use large buttons below the board; facing and equipment are expandable. Tap or drag to a floor destination for a route through currently exposed, unoccupied floor. Each step uses the engine and spends AP; closed doors open as part of the route at their normal AP cost, and pending reactions stop the route. Direction buttons provide precise single-square movement. Cancel target selection returns to the action panel. Infected crew is currently a tabletop option in FLUFF, not an engine variant.
+
+## Simplified play and autopilot
+
+Tap a visible enemy to aim and attack with the active unit. Turning and clearing a jam still cost the normal AP. The sticky Overwatch button activates the selected Marine if needed, clears a jam when affordable, then sets overwatch in its current facing. Automatic overwatch shots are enabled in Preferences; turn that option off for manual reactions. Selecting another friendly unit ends the current activation and discards unused AP. End phase also ends an active unit first.
+
+Autopilot toggles between **Autopilot** and **Pause autopilot**. It plays both sides, deploys reinforcements, pursues mission objectives, opens doors, attacks, sets overwatch and resolves reactions. One successful command runs per tick. Pausing cancels further planned movement and preserves the current game; restart turns autopilot off. It demonstrates play and can lose: it does not guarantee Marine victory. Marine targeting uses the observed snapshot; route planning uses the public mission chart, never private contact strengths.
+
+`web/autopilot.js` is the planner. The bridge adds `layout` (the public chart) and `can_shoot` (engine legality). `src/c-test/autopilot-test.mjs` runs two seeds of all nine scenarios to legal endings and requires door, attack, overwatch and reaction activity.
